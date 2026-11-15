@@ -197,7 +197,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 </script>
 <script>
 'use strict';
-var VERSION = 'v2026-11-15b';
+var VERSION = 'v2026-11-15d';
 var DEMO = /[?&]demo=1/.test(location.search);
 var PFX = DEMO ? 'fcal.demo.' : 'fcal.';
 
@@ -358,8 +358,18 @@ function evsOn(d, nofilt) {
   return live(DB.events).filter(function (x) { return occursOn(x, d) && (nofilt || matchFilt(x)); })
     .sort(function (a, b) { var ta = a.st || '', tb = b.st || ''; if (!ta !== !tb) return ta ? 1 : -1; return ta < tb ? -1 : ta > tb ? 1 : 0; });
 }
-function tdsOn(d, nofilt) {
-  return live(DB.todos).filter(function (x) { return occursOn(x, d) && (nofilt || matchFilt(x)); })
+function isRep(x) { return !!(x.rep && x.rep.t && x.rep.t !== 'none'); }
+function tdEnd(x) { return x.due && x.due > x.date ? x.due : x.date; }
+/* spread：Daily では、期限のある未完了の ToDo を 開始日〜期限 の毎日に出す（済にした ToDo は済にした日に出す） */
+function tdOnDay(x, d, spread) {
+  if (isRep(x)) return occursOn(x, d);
+  if (x.deleted || !x.date) return false;
+  if (!spread) return d === x.date;
+  if (x.done) return d === (x.doneOn || x.date);
+  return d >= x.date && d <= tdEnd(x);
+}
+function tdsOn(d, nofilt, spread) {
+  return live(DB.todos).filter(function (x) { return tdOnDay(x, d, spread) && (nofilt || matchFilt(x)); })
     .sort(function (a, b) { var ta = a.st || '99', tb = b.st || '99'; return ta < tb ? -1 : ta > tb ? 1 : 0; });
 }
 function isDone(x, d) { var r = x.rep || {}; if (r.t && r.t !== 'none') return !!(x.doneD && x.doneD[d]); return !!x.done; }
@@ -530,7 +540,7 @@ function formHTML(kind, x, isNew) {
     '<div class="row"><span class="lab">ジャンル</span><div class="tbtns">' + G.map(function (g) { return '<button type="button" data-g="' + g.k + '" class="' + (x.gen === g.k ? 'on' : '') + '" style="--tc:' + g.c + '">' + g.n + '</button>'; }).join('') + '</div></div>' +
     '<div class="row"><span class="lab">項目</span><div class="sbtns" data-subs style="flex:1"></div></div>' +
     '<div class="row"><span class="lab">自由記載</span><input class="ttl" data-f="title" placeholder="' + (kind === 'ev' ? '例：歯医者、〇〇ちゃんの家、△△（お店の名前）' : '例：上履きを洗う、体操服') + '"></div>' +
-    '<div class="row"><span class="lab">日付</span><input type="date" data-f="date">' + (kind === 'ev' ? ' 〜 <input type="date" data-f="end"> <span class="note">数日続くとき（旅行など）</span>' : '') + '</div>' +
+    '<div class="row"><span class="lab">日付</span><input type="date" data-f="date">' + (kind === 'ev' ? ' 〜 <input type="date" data-f="end"> <span class="note">数日続くとき（旅行など）</span>' : ' 〜 期限 <input type="date" data-f="due"> <span class="note">急がないとき：期限まで毎日 Daily に出る（繰り返しでは使わない）</span>') + '</div>' +
     '<div class="row"><span class="lab">時刻</span>' + tsel('st', x.st) + (kind === 'ev' ? ' 〜 ' + tsel('et', x.et) : '') + ' <span class="note">空なら時刻なし（終日）</span></div>' +
     '<div class="row"><span class="lab">繰り返し</span><select data-f="rept"><option value="none">なし</option><option value="weekly">毎週</option><option value="biweekly">隔週</option><option value="monthly">毎月（同じ日）</option><option value="yearly">毎年</option></select>' +
     '<span data-wdw>' + WD.map(function (w, i) { return '<label class="inl"><input type="checkbox" data-wd="' + i + '">' + w + '</label>'; }).join(' ') + '</span>' +
@@ -541,7 +551,7 @@ function formHTML(kind, x, isNew) {
 function bindForm(root, kind, x, isNew) {
   var st = clone(x);
   function q(s) { return root.querySelector(s); }
-  q('[data-f=title]').value = st.title || ''; q('[data-f=date]').value = st.date || '';
+  q('[data-f=title]').value = st.title || ''; q('[data-f=date]').value = st.date || ''; if (q('[data-f=due]')) q('[data-f=due]').value = st.due || '';
   if (q('[data-f=end]')) q('[data-f=end]').value = st.end || '';
   q('[data-f=rept]').value = (st.rep && st.rep.t) || 'none';
   q('[data-f=until]').value = (st.rep && st.rep.until) || '';
@@ -581,11 +591,13 @@ function bindForm(root, kind, x, isNew) {
     var o = clone(st);
     o.title = q('[data-f=title]').value.trim(); o.date = q('[data-f=date]').value;
     o.end = q('[data-f=end]') ? q('[data-f=end]').value : '';
+    if (kind === 'td') o.due = q('[data-f=due]').value;
     o.st = tget(root, 'st'); o.et = kind === 'ev' ? tget(root, 'et') : '';
     var t = q('[data-f=rept]').value;
     o.rep = { t: t, wd: $$('input[data-wd]', root).filter(function (c) { return c.checked; }).map(function (c) { return +c.getAttribute('data-wd'); }), until: t === 'none' ? '' : q('[data-f=until]').value, hol: t !== 'none' && q('[data-f=hol]').checked, skip: (st.rep && st.rep.skip) || [] };
     if (!(t === 'weekly' || t === 'biweekly')) o.rep.wd = [];
-    if (t !== 'none') o.end = '';
+    if (t !== 'none') { o.end = ''; o.due = ''; }
+    if (o.due && o.due < o.date) { alert('期限が日付より前です'); return null; }
     o.imp = q('[data-f=imp]').checked; o.memo = q('[data-f=memo]').value.trim();
     var nt = q('[data-f=notify]'); o._notify = nt ? nt.checked : false;
     if (!o.who.length) { alert('だれの' + (kind === 'ev' ? '予定' : 'ToDo') + 'か、人を選んでください'); return null; }
@@ -635,13 +647,14 @@ function tdRow(x, d, showDate) {
   var g = gOf('td', x.gen), dn = isDone(x, d);
   return '<div class="ev' + (dn ? ' done' : '') + '" style="--tc:' + g.c + '" data-td="' + x.id + '" data-d="' + d + '"><input type="checkbox" data-chk' + (dn ? ' checked' : '') + ' title="済"><span class="tm">' + (showDate ? jd(d) : esc(x.st || '')) + '</span>' +
     '<span class="tg">' + g.n + '</span>' + pbs(x.who) + '<span class="nm">' + esc(label(x)) + '</span>' + (x.imp ? '<span class="imp">★</span>' : '') +
-    (repText(x) ? '<span class="ic">↻ ' + esc(repText(x)) + '</span>' : '') + (x.memo ? '<span class="mm">' + linkify(x.memo) + '</span>' : '') + '</div>';
+    (repText(x) ? '<span class="ic">↻ ' + esc(repText(x)) + '</span>' : '') + (!isRep(x) && x.due && x.due > x.date ? '<span class="ic' + (!dn && x.due < today() ? ' imp' : '') + '">期限 ' + jd(x.due) + 'まで</span>' : '') +
+    (!isRep(x) && !dn ? '<button class="btn sm" data-tmr style="margin-left:auto">明日へ</button>' : '') + (x.memo ? '<span class="mm">' + linkify(x.memo) + '</span>' : '') + '</div>';
 }
 function itHTML(x, kind, d, compact) {
   var g = gOf(kind, x.gen), cont = kind === 'ev' && x.end && x.end > x.date && d !== x.date;
   var cls = 'it' + (kind === 'td' ? ' td' : '') + (kind === 'td' && isDone(x, d) ? ' done' : '');
   return '<div class="' + cls + '" style="--tc:' + g.c + ';--tb:' + g.c + '1f" data-' + kind + '="' + x.id + '" data-d="' + d + '">' + pbs(x.who) + ' ' +
-    (cont ? '→' : (x.st ? '<span class="t">' + x.st + '</span>' : '')) + esc(label(x)) + (x.imp && !compact ? '<span class="imp">★</span>' : '') + '</div>';
+    (cont ? '→' : (x.st ? '<span class="t">' + x.st + '</span>' : '')) + esc(label(x)) + (kind === 'td' && !isRep(x) && x.due && x.due > x.date ? '<span class="ic">〜' + (+x.due.slice(5, 7)) + '/' + (+x.due.slice(8)) + '</span>' : '') + (x.imp && !compact ? '<span class="imp">★</span>' : '') + '</div>';
 }
 function msgIt(m) { var k = kOf(MKIND, m.kind); return '<div class="it msg" style="--tc:' + k.c + '" data-msg="' + m.id + '">' + pb(m.from) + '☞' + pbs(m.to) + ' 期限：' + esc(k.n) + (m.detail ? ' ' + esc(m.detail.split('\n')[0].slice(0, 20)) : '') + '</div>'; }
 function filtBar() {
@@ -649,13 +662,20 @@ function filtBar() {
   return '<span class="filt noprint"><span class="note">表示：</span><button class="fchip' + (f.length ? '' : ' on') + '" data-fl="">全員</button>' +
     PEOPLE.filter(function (p) { return p.k !== 'F'; }).map(function (p) { return '<button class="fchip' + (f.indexOf(p.k) >= 0 ? ' on' : '') + '" style="--pc:' + p.c + '" data-fl="' + p.k + '">' + p.k + '</button>'; }).join('') + '<span class="note">（家族〔F〕の予定はいつも出す）</span></span>';
 }
+/* 明日へ：見ている日（過去の日なら今日）の次の日へ。期限が新しい日付より前なら期限を消す */
+function moveTmr(list) {
+  var base = S.day < today() ? today() : S.day, nd = addDays(base, 1), t = now();
+  list.forEach(function (x) { x.date = nd; if (x.due && x.due < nd) x.due = ''; x.updatedAt = t; });
+  commit(); toast(list.length + ' 件を ' + jd(nd) + ' に移しました');
+}
 function bindCommon(root) {
   $$('[data-fl]', root).forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-fl'); if (!k) dev.filt = []; else { var i = dev.filt.indexOf(k); if (i >= 0) dev.filt.splice(i, 1); else dev.filt.push(k); } saveDev(); render(); }; });
   $$('[data-ev]', root).forEach(function (e) { e.onclick = function (ev) { ev.stopPropagation(); openEdit('ev', e.getAttribute('data-ev'), e.getAttribute('data-d')); }; });
   $$('[data-td]', root).forEach(function (e) {
     e.onclick = function (ev) {
       ev.stopPropagation();
-      if (ev.target.hasAttribute('data-chk')) { var x = findIn(DB.todos, e.getAttribute('data-td')), d = e.getAttribute('data-d'); if (x.rep && x.rep.t && x.rep.t !== 'none') { x.doneD = x.doneD || {}; if (ev.target.checked) x.doneD[d] = true; else delete x.doneD[d]; } else x.done = ev.target.checked; x.updatedAt = now(); commit(); return; }
+      if (ev.target.hasAttribute('data-tmr')) { var y = findIn(DB.todos, e.getAttribute('data-td')); moveTmr([y]); return; }
+      if (ev.target.hasAttribute('data-chk')) { var x = findIn(DB.todos, e.getAttribute('data-td')), d = e.getAttribute('data-d'); if (isRep(x)) { x.doneD = x.doneD || {}; if (ev.target.checked) x.doneD[d] = true; else delete x.doneD[d]; } else { x.done = ev.target.checked; x.doneOn = x.done ? (S.day || d) : ''; } x.updatedAt = now(); commit(); return; }
       openEdit('td', e.getAttribute('data-td'), e.getAttribute('data-d'));
     };
   });
@@ -679,7 +699,7 @@ function newsBanner() {
 }
 function rDaily() {
   var d = S.day, hn = holName(d), dw = pd(d).getDay();
-  var evs = evsOn(d), tds = tdsOn(d);
+  var evs = evsOn(d), tds = tdsOn(d, false, true);
   var h = '';
   if (!configured() && !DEMO) h += '<div class="banner">まだ接続していません（この端末だけに保存）。「⚙ 設定」で接続するか、家族用のQRコードを読み取ってください。</div>';
   if (configured() && !dev.me) h += '<div class="banner">「⚙ 設定」で、この端末を使う人（R・T・N・A）を選んでください。連絡の差出人・「自分あて」に使います。</div>';
@@ -691,9 +711,11 @@ function rDaily() {
   var left = dc('d_ev', '予定（' + evs.length + '）', evs.length ? evs.map(function (x) { return evRow(x, d); }).join('') : '<div class="empty">この日の予定はありません</div>');
   var over = '';
   if (d === today()) {
-    var ov = live(DB.todos).filter(function (x) { return (!x.rep || !x.rep.t || x.rep.t === 'none') && !x.done && x.date < d && matchFilt(x); });
-    if (ov.length) over = '<div class="sec">前の日からの未完了</div>' + ov.map(function (x) { return tdRow(x, x.date, true); }).join('');
+    var ov = live(DB.todos).filter(function (x) { return !isRep(x) && !x.done && tdEnd(x) < d && matchFilt(x); });
+    if (ov.length) over = '<div class="sec">前の日からの未完了（期限が過ぎたもの）</div>' + ov.map(function (x) { return tdRow(x, x.date, true); }).join('');
   }
+  var mv = (d === today() ? ov : []).concat(tds.filter(function (x) { return !isRep(x) && !x.done && tdEnd(x) <= d; }));
+  if (mv.length) over = '<div class="row" style="margin:0 0 4px"><button class="btn sm" id="allTmr">未完了をすべて明日へ（' + mv.length + '）</button><span class="note">期限がまだ先の ToDo はそのまま毎日出ます</span></div>' + over;
   left += dc('d_td', 'ToDo（' + tds.filter(function (x) { return !isDone(x, d); }).length + '／' + tds.length + '）', over + (tds.length ? tds.map(function (x) { return tdRow(x, d); }).join('') : (over ? '' : '<div class="empty">この日の ToDo はありません</div>')));
   var ms = msgsOpen().filter(function (m) { return m.due && m.due <= d; }).sort(function (a, b) { return a.due < b.due ? -1 : 1; });
   var right = dc('d_msg', '連絡（期限がこの日まで・未完了 ' + ms.length + '）', ms.length ? ms.map(function (m) { return msgCard(m, true); }).join('') : '<div class="empty">ありません</div>');
@@ -707,6 +729,7 @@ function rDaily() {
   $('#dtoday').onclick = function () { S.day = today(); render(); };
   $('#dpick').onchange = function () { if (this.value) { S.day = this.value; render(); } };
   $$('[data-add]', m).forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-add'); S.add = S.add === k ? '' : k; render(); }; });
+  if ($('#allTmr')) $('#allTmr').onclick = function () { moveTmr(mv); };
   if ($('#seen')) $('#seen').onclick = function () { dev.seenAt = now(); saveDev(); render(); };
   if (S.add) { var collect = bindForm($('#af'), S.add, newItem(S.add, d), true); $('#acreate').onclick = function () { var o = collect(); if (!o) return; saveItem(S.add, o, true); toast('作成しました'); }; }
   bindMsgBtns(m); bindCommon(m);
@@ -739,7 +762,7 @@ function rMonth() {
   var h = '<h2 class="noprint"><button class="btn sm" id="mprev">◀</button><span>' + y + '年' + mo + '月</span><button class="btn sm" id="mnext">▶</button><button class="btn sm" id="mtoday">今月</button>' + filtBar() +
     '<label class="inl note"><input type="checkbox" id="mtodo"' + (dev.mtodo ? ' checked' : '') + '>ToDoも出す</label></h2>' +
     '<div class="row noprint"><button class="btn pri" id="mprint">🖨 印刷（A4横）</button><span class="note">文字</span><select id="pfont"><option value="pf-l">大</option><option value="pf-m">中</option><option value="pf-s">小（予定が多い月）</option></select>' +
-    '<label class="inl note"><input type="checkbox" id="ptodo"' + (dev.ptodo ? ' checked' : '') + '>ToDoも印刷</label><span class="note">PDFにするときは印刷の画面で「PDFに保存」</span></div>' + legend() +
+    '<label class="inl note"><input type="checkbox" id="ptodo"' + (dev.ptodo ? ' checked' : '') + '>ToDoも印刷</label><span class="note">PDFにするときは印刷の画面で「PDFに保存」</span><button class="btn" id="gimp" style="margin-left:auto">Googleカレンダーから取り込む</button><button class="btn" id="gexp">Googleカレンダー用に書き出す</button></div>' + legend() +
     '<div class="ptitle"><span>' + y + '年' + mo + '月</span><small>家族カレンダー　' + (dev.filt.length ? '表示：' + dev.filt.join('・') + '＋家族　' : '') + '印刷 ' + fmtTs(now()) + '</small></div>' +
     '<table class="cal" style="--ph:' + (168 / rows).toFixed(1) + 'mm"><tr>';
   for (var i = 0; i < 7; i++) { var w = (ws + i) % 7; h += '<th class="' + (w === 0 ? 'sun' : w === 6 ? 'sat' : '') + '">' + WD[w] + '</th>'; }
@@ -764,6 +787,7 @@ function rMonth() {
   $('#mprev').onclick = function () { S.mo = ymd(new Date(y, mo - 2, 1)).slice(0, 7); render(); };
   $('#mnext').onclick = function () { S.mo = nextFirst.slice(0, 7); render(); };
   $('#mtoday').onclick = function () { S.mo = today().slice(0, 7); render(); };
+  $('#gimp').onclick = importDlg; $('#gexp').onclick = exportDlg;
   $('#mprint').onclick = function () { document.body.className = dev.pfont || 'pf-m'; window.print(); };
   $$('td[data-day]', m).forEach(function (e) { e.onclick = function () { S.day = e.getAttribute('data-day'); location.hash = '#daily'; }; });
   bindCommon(m);
@@ -953,11 +977,15 @@ function rSet() {
   h += '<div class="card"><h3>項目の候補（全端末で共通）</h3><p class="note">1行に1つ。空にすると最初の候補に戻ります。</p><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">' +
     EGEN.concat(TGEN).map(function (g) { var kind = EGEN.indexOf(g) >= 0 ? 'ev' : 'td'; return '<label><span class="tg" style="--tc:' + g.c + '">' + (kind === 'ev' ? '予定：' : 'ToDo：') + g.n + '</span><textarea rows="4" data-subk="' + kind + ':' + g.k + '">' + esc(subsOf(kind, g.k).join('\n')) + '</textarea></label>'; }).join('') +
     '</div><div class="row"><button class="btn pri" id="ssave">候補を保存</button></div></div>';
+  var gn = live(DB.events).filter(function (e) { return e.src === 'google'; }).length;
+  h += '<div class="card"><h3>Googleカレンダー（取り込み・書き出し）</h3><p class="note">Googleカレンダーから書き出したファイル（zip／.ics）を読み込んで予定にします（一方向。アプリで足した予定は Google には入りません）。いま取り込んだ予定 ' + gn + ' 件。</p><div class="row"><button class="btn pri" id="gimp2">取り込む</button><button class="btn" id="gexp2">Google用に書き出す（.ics）</button><button class="btn red" id="gdel">Googleから取り込んだ予定をすべて削除</button></div></div>';
   h += '<div class="card"><h3>表示</h3><div class="row">週の始まり <select id="wstart"><option value="0">日曜</option><option value="1">月曜</option></select></div></div>';
   h += '<div class="card"><h3>バックアップ</h3><div class="row"><button class="btn" id="bexp">JSON に書き出す</button><label class="btn">JSON を読み込む（合体）<input type="file" id="bimp" accept=".json" hidden></label></div></div>';
   h += '<div class="card"><h3>アプリの版</h3><div class="row">' + VERSION + '<button class="btn" id="reload">最新版を読み込み直す</button></div></div>';
   var m = $('#main'); m.innerHTML = h;
   $('#wstart').value = String(s.weekStart || 0);
+  $('#gimp2').onclick = importDlg; $('#gexp2').onclick = exportDlg;
+  $('#gdel').onclick = function () { var g = live(DB.events).filter(function (e) { return e.src === 'google'; }); if (!g.length) { toast('取り込んだ予定はありません'); return; } if (!confirm('Googleから取り込んだ予定 ' + g.length + ' 件をすべて削除しますか？（アプリで作った予定は残ります）')) return; var t = now(); g.forEach(function (e) { e.deleted = true; e.updatedAt = t; }); commit(); toast('削除しました'); };
   $$('[data-me]', m).forEach(function (b) { b.onclick = function () { dev.me = b.getAttribute('data-me'); saveDev(); toast('この端末は ' + dev.me + ' にしました'); render(); }; });
   $('#dnotify').onchange = function () { dev.notify = this.checked; saveDev(); };
   $('#csave').onclick = function () { cfg = { owner: $('#cown').value.trim(), repo: $('#crep').value.trim(), token: $('#ctok').value.trim() }; lsSet('cfg', cfg); toast('保存しました。同期します'); sync().then(render); };
@@ -981,6 +1009,228 @@ function rSet() {
   $('#bexp').onclick = function () { var b = new Blob([JSON.stringify(DB, null, 1)], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'family-cal_' + today() + '.json'; a.click(); };
   $('#bimp').onchange = function () { var f = this.files[0]; if (!f) return; f.text().then(function (t) { try { DB = mergeDB(DB, fixDB(JSON.parse(t))); commit(); toast('読み込みました'); } catch (e) { alert('読み込めませんでした：' + e.message); } }); };
   $('#reload').onclick = function () { var k = urlKey(); location.replace(location.pathname + '?v=' + now() + (DEMO ? '&demo=1' : '') + (k ? '&k=' + k : '') + '#set'); };
+}
+
+
+/* ================= Googleカレンダーの取り込み（.ics／エクスポートzip。メモ帖と同じ方式・一方向） ================= */
+function hkey(t) { var h = 2166136261 >>> 0; for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h.toString(36); }
+async function unzip(buf) {
+  var dv = new DataView(buf), e = buf.byteLength - 22;
+  while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error('zipが読めません');
+  var n = dv.getUint16(e + 10, true), p = dv.getUint32(e + 16, true), out = [];
+  for (var i = 0; i < n; i++) {
+    var method = dv.getUint16(p + 10, true), cs = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+    var name = new TextDecoder().decode(new Uint8Array(buf, p + 46, nl)); p += 46 + nl + xl + cl;
+    if (!/\.ics$/i.test(name)) continue;
+    var lnl = dv.getUint16(lo + 26, true), lxl = dv.getUint16(lo + 28, true);
+    var data = new Uint8Array(buf, lo + 30 + lnl + lxl, cs), bytes;
+    if (method === 0) bytes = data;
+    else if (method === 8) {
+      if (!window.DecompressionStream) throw new Error('このブラウザはzipを開けません。PCで解凍して中の.icsを選んでください');
+      bytes = new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+    } else continue;
+    out.push({ name: name.split('/').pop(), text: new TextDecoder().decode(bytes) });
+  }
+  return out;
+}
+function icsUnesc(v) { return v.replace(/\\n/gi, '\n').replace(/\\([,;\\])/g, '$1'); }
+function icsDT(v, params) {
+  v = (v || '').trim();
+  if (/VALUE=DATE(?!-)/i.test(params || '') || /^\d{8}$/.test(v)) return { date: v.slice(0, 4) + '-' + v.slice(4, 6) + '-' + v.slice(6, 8), allDay: true };
+  var m = v.match(/^(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)(Z?)$/); if (!m) return null;
+  if (m[7]) { var d = new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6])); return { date: ymd(d), time: pad(d.getHours()) + ':' + pad(d.getMinutes()), allDay: false }; }
+  return { date: m[1] + '-' + m[2] + '-' + m[3], time: m[4] + ':' + m[5], allDay: false };
+}
+function parseICS(text) {
+  var L = text.replace(/\r\n?/g, '\n').replace(/\n[ \t]/g, '').split('\n');
+  var name = '', cur = null, depth = 0, evs = [];
+  L.forEach(function (l) {
+    if (l === 'BEGIN:VEVENT') { cur = { ex: {} }; depth = 0; return; }
+    if (l === 'END:VEVENT') { if (cur) evs.push(cur); cur = null; return; }
+    if (cur && /^BEGIN:/.test(l)) { depth++; return; }
+    if (cur && /^END:/.test(l)) { depth--; return; }
+    var m = l.match(/^([A-Za-z0-9-]+)((?:;[^:]*)?):(.*)$/); if (!m) return;
+    var k = m[1].toUpperCase(), pr = m[2], v = m[3];
+    if (!cur) { if (k === 'X-WR-CALNAME') name = icsUnesc(v); return; }
+    if (depth > 0) return;
+    if (k === 'UID') cur.uid = v;
+    else if (k === 'SUMMARY') cur.title = icsUnesc(v);
+    else if (k === 'DESCRIPTION') cur.desc = icsUnesc(v);
+    else if (k === 'LOCATION') cur.loc = icsUnesc(v);
+    else if (k === 'STATUS') cur.status = v.toUpperCase();
+    else if (k === 'DTSTART') cur.s = icsDT(v, pr);
+    else if (k === 'DTEND') cur.e = icsDT(v, pr);
+    else if (k === 'RRULE') { cur.rr = {}; v.split(';').forEach(function (x) { var q = x.split('='); cur.rr[q[0]] = q[1]; }); }
+    else if (k === 'EXDATE') v.split(',').forEach(function (x) { var d = icsDT(x, pr); if (d) cur.ex[d.date] = 1; });
+    else if (k === 'RECURRENCE-ID') { var d = icsDT(v, pr); if (d) cur.rid = d.date; }
+  });
+  return { name: name, evs: evs.filter(function (e) { return (e.s && e.status !== 'CANCELLED') || e.rid; }) };
+}
+var DOWC = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+function expandICS(cal, from, to) {
+  var out = [], over = {};
+  cal.evs.forEach(function (e) { if (e.rid) { over[e.uid] = over[e.uid] || {}; over[e.uid][e.rid] = 1; } });
+  cal.evs.forEach(function (e) {
+    if (!e.s) return;
+    if (e.rid && e.status === 'CANCELLED') return;
+    var span = 0;
+    if (e.e) { var ed = e.s.allDay ? addDays(e.e.date, -1) : e.e.date; var midnight = !e.s.allDay && e.e.time === '00:00' && ed === addDays(e.s.date, 1); if (ed > e.s.date && !midnight) span = diffDays(e.s.date, ed); }
+    var base = { title: e.title || '（無題）', st: e.s.allDay ? '' : e.s.time, et: e.s.allDay || !e.e ? '' : e.e.time,
+      memo: [e.loc ? '場所：' + e.loc : '', e.desc || ''].filter(Boolean).join('\n').slice(0, 2000), uid: e.uid || hkey(JSON.stringify(e.s) + e.title) };
+    function push(d) { var en = span ? addDays(d, span) : ''; if ((en || d) < from || d > to) return; out.push(Object.assign({}, base, { date: d, end: en })); }
+    if (!e.rr || e.rid) { push(e.s.date); return; }
+    var r = e.rr, iv = +(r.INTERVAL || 1), cnt = r.COUNT ? +r.COUNT : Infinity;
+    var until = r.UNTIL ? (icsDT(r.UNTIL, '') || {}).date || '9999' : '9999';
+    var skip = Object.assign({}, e.ex, over[e.uid] || {});
+    var n = 0, guard = 0, s0 = pd(e.s.date);
+    function emit(d) { if (d < e.s.date) return true; if (d > until || n >= cnt || d > to) return false; n++; if (!skip[d]) push(d); return true; }
+    var byday = (r.BYDAY || '').split(',').filter(Boolean);
+    if (r.FREQ === 'DAILY') { for (var d = e.s.date; guard++ < 20000; d = addDays(d, iv)) { if (!emit(d)) break; } }
+    else if (r.FREQ === 'WEEKLY') {
+      var wd = byday.length ? byday.map(function (x) { return DOWC.indexOf(x.slice(-2)); }).sort(function (a, b) { return a - b; }) : [s0.getDay()];
+      var wk = addDays(e.s.date, -s0.getDay()), go = true;
+      while (go && guard++ < 5000) { for (var i = 0; i < wd.length; i++) { if (!emit(addDays(wk, wd[i]))) { go = false; break; } } wk = addDays(wk, 7 * iv); }
+    } else if (r.FREQ === 'MONTHLY' || r.FREQ === 'YEARLY') {
+      var step = r.FREQ === 'YEARLY' ? 12 * iv : iv;
+      for (var k = 0; guard++ < 2000; k += step) {
+        var y = s0.getFullYear(), mo = s0.getMonth() + k, fm = new Date(y, mo, 1), dd2 = null;
+        if (byday.length && r.FREQ === 'MONTHLY') {
+          var mm = byday[0].match(/^([+-]?\d+)?([A-Z]{2})$/) || [0, '1', DOWC[s0.getDay()]], w = DOWC.indexOf(mm[2]), nth = +(mm[1] || 1);
+          if (nth > 0) { var f = 1 + (w - fm.getDay() + 7) % 7, x = f + 7 * (nth - 1); if (x <= new Date(y, mo + 1, 0).getDate()) dd2 = ymd(new Date(y, mo, x)); }
+          else { var ld = new Date(y, mo + 1, 0); dd2 = ymd(new Date(y, mo, ld.getDate() - ((ld.getDay() - w + 7) % 7) + 7 * (nth + 1))); }
+        } else { var md = +(r.BYMONTHDAY || s0.getDate()); if (md <= new Date(y, mo + 1, 0).getDate()) dd2 = ymd(new Date(y, mo, md)); }
+        if (!dd2) { if (ymd(fm) > to) break; continue; }
+        if (!emit(dd2)) break;
+      }
+    } else push(e.s.date);
+  });
+  return out;
+}
+/* 予定の名前に項目名（塾・当直など）が入っていれば、そのジャンル・項目にする */
+function guessItem(title, defGen) {
+  var all = [];
+  EGEN.forEach(function (g) { subsOf('ev', g.k).forEach(function (s) { all.push({ g: g.k, s: s }); }); });
+  all.sort(function (a, b) { return b.s.length - a.s.length; });
+  for (var i = 0; i < all.length; i++) if (title.indexOf(all[i].s) >= 0) return { gen: all[i].g, item: all[i].s, title: title.replace(all[i].s, '').replace(/^[\s　・:：、-]+|[\s　・:：、-]+$/g, '') };
+  return { gen: defGen || 'eother', item: '', title: title };
+}
+function importDlg() {
+  var cals = [], td = today();
+  function draw() {
+    openModal('<h2>Googleカレンダーから取り込む</h2>' +
+      '<p class="note">PCのブラウザで Googleカレンダー →（右上の歯車）設定 →「インポート／エクスポート」→「エクスポート」で zip をダウンロード → ここで選ぶ（zip のままでよい）。1つのカレンダーだけなら、そのカレンダーの「設定」→「エクスポート」の .ics でもよい。</p>' +
+      '<div class="row"><label class="btn pri">ファイルを選ぶ（.zip／.ics）<input type="file" id="iF" accept=".zip,.ics,text/calendar,application/zip" hidden></label></div>' +
+      (cals.length ? '<h3>取り込むカレンダー</h3>' + cals.map(function (c, i) {
+        return '<div class="card"><label class="inl"><input type="checkbox" data-ci="' + i + '"' + (c.on ? ' checked' : '') + '> <b>' + esc(c.name) + '</b>（' + c.evs.filter(function (e) { return !e.rid; }).length + '件' + (c.evs.some(function (e) { return e.rr; }) ? '・繰り返しあり' : '') + '）</label>' +
+          '<div class="row"><span class="lab">だれの</span>' + whoBtns(c.who, 'data-cw="' + i + '" data-p') + '</div>' +
+          '<div class="row"><span class="lab">ジャンル</span><select data-cg="' + i + '">' + EGEN.map(function (g) { return '<option value="' + g.k + '"' + (c.gen === g.k ? ' selected' : '') + '>' + g.n + '</option>'; }).join('') + '</select><span class="note">名前に「塾」「当直」などの項目名が入っている予定は、その項目に自動で分けます</span></div></div>';
+      }).join('') +
+      '<div class="row"><span class="lab">期間</span><input type="date" id="iA" value="' + esc(S.iA || addDays(td, -30)) + '"> 〜 <input type="date" id="iB" value="' + esc(S.iB || addDays(td, 365)) + '"></div>' +
+      '<p class="note">繰り返しの予定は、この期間の分だけ1件ずつ作ります（アプリの繰り返しにはしません）。同じファイルをもう一度取り込むと、重複せずに上書きされます（アプリで直した内容・消した予定も Google 側の内容に戻ります）。Google 側で消した予定は自動では消えません。取り込みでは家族への通知は送りません。</p>' +
+      '<div class="row"><button class="btn pri" id="iGo">取り込む</button><button class="btn" data-close>閉じる</button></div>'
+      : '<div class="row"><button class="btn" data-close>閉じる</button></div>'));
+    async function load(files) {
+      try {
+        var got = [];
+        for (var i = 0; i < files.length; i++) { var f = files[i]; if (f.zip) (await unzip(f.buf)).forEach(function (z) { got.push(z); }); else got.push(f); }
+        cals = got.map(function (g) { var p = parseICS(g.text), nm = p.name || g.name.replace(/\.ics$/i, '').replace(/_[^_]*@.*$/, ''), hol = /祝日|holiday/i.test(nm);
+          return { name: nm, evs: p.evs, on: !hol, who: dev.me && dev.me !== 'F' ? [dev.me] : ['F'], gen: 'eother' }; }).filter(function (c) { return c.evs.length; });
+        if (!cals.length) toast('予定が見つかりませんでした');
+        draw();
+      } catch (x) { toast(x.message || '読み込めませんでした'); }
+    }
+    $('#iF').onchange = async function (ev) { var f = ev.target.files[0]; if (!f) return; var buf = await f.arrayBuffer(), b = new Uint8Array(buf);
+      if (b[0] === 0x50 && b[1] === 0x4b) load([{ zip: true, buf: buf }]); else load([{ name: f.name, text: new TextDecoder().decode(b) }]); };
+    $$('[data-ci]', $('#mbox')).forEach(function (c) { c.onchange = function () { cals[+c.getAttribute('data-ci')].on = c.checked; }; });
+    $$('[data-cg]', $('#mbox')).forEach(function (c) { c.onchange = function () { cals[+c.getAttribute('data-cg')].gen = c.value; }; });
+    $$('button[data-cw]', $('#mbox')).forEach(function (b) { b.onclick = function () { var c = cals[+b.getAttribute('data-cw')], k = b.getAttribute('data-p'), i = c.who.indexOf(k); if (i >= 0) c.who.splice(i, 1); else c.who.push(k); b.classList.toggle('on'); }; });
+    var go = $('#iGo');
+    if (go) go.onclick = function () {
+      var A = $('#iA').value, B = $('#iB').value; S.iA = A; S.iB = B;
+      if (!A || !B || A > B) { alert('期間を確かめてください'); return; }
+      var on = cals.filter(function (c) { return c.on; });
+      if (on.some(function (c) { return !c.who.length; })) { alert('カレンダーごとに「だれの」を選んでください'); return; }
+      var add = 0, upd = 0, t = now();
+      on.forEach(function (c) {
+        expandICS(c, A, B).forEach(function (x) {
+          var id = 'g' + hkey(x.uid + '|' + x.date) + hkey(x.date + '|' + x.uid);
+          var gi = guessItem(x.title, c.gen);
+          var rec = { id: id, kind: 'ev', who: c.who.slice(), gen: gi.gen, item: gi.item, title: gi.title, date: x.date, end: x.end, st: x.st, et: x.et,
+            rep: { t: 'none', wd: [], until: '', hol: false, skip: [] }, imp: IMP_DEF.indexOf(gi.item) >= 0, memo: x.memo, src: 'google', cal: c.name };
+          var old = findIn(DB.events, id);
+          if (old) { Object.assign(old, rec, { deleted: false }); old.updatedAt = t; upd++; }
+          else { rec.createdAt = rec.updatedAt = t; rec.by = dev.me || ''; DB.events.push(rec); add++; }
+        });
+      });
+      closeModal(); commit(); toast('取り込みました（新規 ' + add + ' 件・更新 ' + upd + ' 件）');
+    };
+  }
+  draw();
+}
+
+
+/* ================= Googleカレンダー用に書き出す（.ics。予定だけ・期間・人を選ぶ） ================= */
+function icsEsc(t) { return String(t || '').replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n'); }
+function icsFold(line) {   /* 1行75バイトまで（UTF-8）。続きは先頭に空白 */
+  var out = [], cur = '', n = 0, enc = new TextEncoder();
+  for (var i = 0; i < line.length; i++) { var ch = line[i], b = enc.encode(ch).length; if (n + b > (out.length ? 74 : 75)) { out.push(cur); cur = ''; n = 0; } cur += ch; n += b; }
+  out.push(cur); return out.join('\r\n ');
+}
+function icsD(d) { return d.replace(/-/g, ''); }
+function icsT(d, t) { return icsD(d) + 'T' + t.replace(':', '') + '00'; }
+function addHour(t, h) { var p = t.split(':'), m = +p[0] * 60 + +p[1] + h * 60; if (m >= 1440) return null; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); }
+function buildICS(A, B, who, noGoogle) {
+  var st = new Date(), stamp = st.getUTCFullYear() + pad(st.getUTCMonth() + 1) + pad(st.getUTCDate()) + 'T' + pad(st.getUTCHours()) + pad(st.getUTCMinutes()) + pad(st.getUTCSeconds()) + 'Z';
+  var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//family-cal//JA', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:家族カレンダー', 'X-WR-TIMEZONE:Asia/Tokyo',
+    'BEGIN:VTIMEZONE', 'TZID:Asia/Tokyo', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0900', 'TZOFFSETTO:+0900', 'TZNAME:JST', 'END:STANDARD', 'END:VTIMEZONE'];
+  var n = 0, done = {};
+  for (var d = A, g = 0; d <= B && g < 1200; d = addDays(d, 1), g++) {
+    evsOn(d, true).forEach(function (x) {
+      if (noGoogle && x.src === 'google') return;
+      if (!(x.who || []).some(function (k) { return who.indexOf(k) >= 0; })) return;
+      var multi = !isRep(x) && x.end && x.end > x.date, sd = multi ? x.date : d;
+      var key = x.id + '|' + sd; if (done[key]) return; done[key] = 1;
+      var ed = multi ? x.end : sd, gn = gOf('ev', x.gen).n;
+      L.push('BEGIN:VEVENT', 'UID:' + x.id + '-' + icsD(sd) + '@family-cal', 'DTSTAMP:' + stamp);
+      L.push('SUMMARY:' + icsEsc((x.who || []).join('') + label(x)));
+      if (!x.st) { L.push('DTSTART;VALUE=DATE:' + icsD(sd), 'DTEND;VALUE=DATE:' + icsD(addDays(ed, 1))); }
+      else {
+        var et = x.et && (multi || x.et > x.st) ? x.et : addHour(x.st, 1), edd = ed;
+        if (!et) { et = '00:00'; edd = addDays(ed, 1); }
+        L.push('DTSTART;TZID=Asia/Tokyo:' + icsT(sd, x.st), 'DTEND;TZID=Asia/Tokyo:' + icsT(edd, et));
+      }
+      L.push('DESCRIPTION:' + icsEsc((x.memo ? x.memo + '\n' : '') + '（家族カレンダー：' + gn + '）'));
+      L.push('END:VEVENT'); n++;
+    });
+  }
+  L.push('END:VCALENDAR');
+  return { text: L.map(icsFold).join('\r\n') + '\r\n', n: n };
+}
+function exportDlg() {
+  var who = PEOPLE.map(function (p) { return p.k; }), td = today();
+  openModal('<h2>Googleカレンダー用に書き出す（.ics）</h2>' +
+    '<p class="note">予定だけを書き出します（ToDo・連絡は入りません）。Google での名前は「A塾」「NA保護者会」のように イニシャル＋予定。繰り返しの予定は、期間の分を1件ずつ書き出します。</p>' +
+    '<div class="row"><span class="lab">期間</span><input type="date" id="xA" value="' + esc(S.xA || td) + '"> 〜 <input type="date" id="xB" value="' + esc(S.xB || addDays(td, 180)) + '"></div>' +
+    '<div class="row"><span class="lab">人</span><div id="xw">' + whoBtns(who) + '</div><span class="note">選んだ人が入っている予定を書き出す（F〔家族〕の予定も出すときは F も選ぶ）</span></div>' +
+    '<div class="row"><label class="inl"><input type="checkbox" id="xg" checked>Googleから取り込んだ予定は書き出さない（Google 側で二重にならないように）</label></div>' +
+    '<div class="row"><button class="btn pri" id="xgo">書き出す</button><button class="btn" data-close>閉じる</button><span class="note" id="xmsg"></span></div>' +
+    '<div class="card" style="margin-top:8px"><h3>Googleカレンダーへの読み込み方（PCのブラウザ）</h3><ol style="margin:0;padding-left:1.4em;line-height:1.8;font-size:13px">' +
+    '<li>初回だけ：Googleカレンダー →（右上の歯車）設定 → 左の「カレンダーを追加」→「新しいカレンダーを作成」→ 名前「家族カレンダー」→ 作成</li>' +
+    '<li>設定 →「インポート／エクスポート」→「パソコンからファイルを選択」で書き出した .ics → 「カレンダーに追加」で <b>家族カレンダー</b> を選ぶ →「インポート」</li>' +
+    '<li>書き出し直すとき：重ならないように、設定で「家族カレンダー」を削除 → 作り直してから読み込む（ほかのカレンダーに入れないこと）</li></ol></div>');
+  $$('#xw button.wb').forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-p'), i = who.indexOf(k); if (i >= 0) who.splice(i, 1); else who.push(k); b.classList.toggle('on'); }; });
+  $('#xgo').onclick = function () {
+    var A = $('#xA').value, B = $('#xB').value; S.xA = A; S.xB = B;
+    if (!A || !B || A > B) { alert('期間を確かめてください'); return; }
+    if (diffDays(A, B) > 1100) { alert('期間は3年以内にしてください'); return; }
+    if (!who.length) { alert('人を選んでください'); return; }
+    var r = buildICS(A, B, who, $('#xg').checked);
+    if (!r.n) { $('#xmsg').textContent = 'この条件の予定はありません'; return; }
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([r.text], { type: 'text/calendar;charset=utf-8' }));
+    a.download = '家族カレンダー_' + icsD(A) + '-' + icsD(B) + '.ics'; document.body.appendChild(a); a.click(); a.remove();
+    $('#xmsg').textContent = r.n + ' 件を書き出しました（ダウンロードのフォルダ）';
+  };
 }
 
 /* ================= 画面の切り替え ================= */
