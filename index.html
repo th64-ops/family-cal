@@ -30,6 +30,37 @@ header .right{margin-left:auto;font-size:12px;display:flex;gap:6px;align-items:c
 @media (max-width:640px){header .brand{display:none}header a{padding:5px 8px;font-size:13px}}
 main{padding:12px 10px 10px;max-width:1500px;margin:0 auto}
 h2{font-size:17px;margin:2px 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* 見出しの日付（院内ToDo帳と同じ：年は小さく、月を大きく） */
+.ym{display:inline-flex;align-items:baseline;gap:1px;white-space:nowrap}
+.ym .y{font-size:12px;font-weight:normal;color:var(--sub);margin-right:4px}
+.ym .m{font-size:26px;font-weight:bold;line-height:1}
+.ym .d{font-size:21px;font-weight:bold;line-height:1;margin-left:1px}
+.ym .w{font-size:14px}
+.ym .s{font-size:13px;font-weight:normal;margin:0 2px}
+.ev .dn2{font-size:11px;color:var(--sub);margin-left:4px}
+/* 日付を選ぶ3か月のカレンダー（初診入力と同じ形） */
+input[type=date]::-webkit-calendar-picker-indicator{display:none}
+input[type=date]{cursor:pointer}
+#dp3{position:absolute;z-index:9999;background:#fff;border:1px solid #8aa0b8;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.2);padding:6px 8px;font-size:13px;user-select:none;-webkit-user-select:none}
+#dp3 .dpms{display:flex;gap:4px}
+#dp3 .dpm{flex:none;margin:0 4px}
+#dp3 .dph{text-align:center;margin:2px 0 4px}
+#dp3 .dph b{font-size:20px;color:var(--acc)}
+#dp3 .dph small{font-size:10px;color:#999;margin-right:3px}
+#dp3 table{border-collapse:collapse}
+#dp3 th{font-weight:normal;color:#666;width:28px;font-size:11px}
+#dp3 td{width:28px;height:26px;text-align:center;cursor:pointer;border-radius:5px}
+#dp3 td:hover{background:#dbe7f5}
+#dp3 td.su,#dp3 td.ho{color:var(--hol)}#dp3 td.sa{color:var(--sat)}
+#dp3 td.td{outline:1.5px solid var(--acc)}
+#dp3 td.sel{background:var(--acc);color:#fff;font-weight:bold}
+#dp3 td.e{cursor:default}
+#dp3 .dpb{display:flex;justify-content:space-between;align-items:center;gap:4px;margin-bottom:2px;flex-wrap:wrap}
+#dp3 button{font-size:12px;padding:2px 9px;border:1px solid #8aa0b8;background:#f3f6fa;border-radius:12px;cursor:pointer;color:var(--acc)}
+#dp3.sp{left:0!important;right:0;border-radius:0 0 10px 10px;padding:6px 0}
+#dp3.sp .dpb{padding:0 8px}
+#dp3.sp .dpms{overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory;padding:0 4px}
+#dp3.sp .dpm{scroll-snap-align:center}
 h3{font-size:14px;margin:0 0 6px;color:#3e5672}
 .card{background:var(--card);border:1px solid #ebe7de;border-radius:10px;padding:9px 11px;margin-bottom:9px;box-shadow:0 1px 2px rgba(43,51,64,.05)}
 .cols{display:grid;grid-template-columns:minmax(0,60fr) minmax(0,40fr);gap:9px;align-items:start}
@@ -124,6 +155,21 @@ table.cal .hn{font-size:10px;color:var(--hol);margin-left:3px}
 .msg .due.over{color:var(--red);font-weight:bold}
 .msg.done{opacity:.55}
 .msg .mb{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap}
+/* ひとこと */
+.talk{max-width:760px;margin:0 auto}
+.tday{text-align:center;margin:12px 0 4px}
+.tday span{background:#e9e4d8;color:#555;border-radius:10px;padding:1px 10px;font-size:12px}
+.tl{display:flex;gap:6px;align-items:flex-end;margin:5px 0}
+.tl .pb{font-size:15px;flex:none}
+.tl .tb{background:#fff;border:1px solid #e3ded2;border-radius:12px 12px 12px 3px;padding:6px 10px;white-space:pre-wrap;line-height:1.6;max-width:78%;word-break:break-word}
+.tl .tt{font-size:11px;color:var(--sub);flex:none}
+.tl.me{flex-direction:row-reverse}
+.tl.me .tb{background:#dcebd9;border-color:#c6dcc2;border-radius:12px 12px 3px 12px}
+.tl .tx{border:0;background:none;color:#b55;cursor:pointer;font-size:12px;padding:0 2px;flex:none}
+.tl.new .tb{box-shadow:0 0 0 2px #f0c36b}
+.tin{position:sticky;bottom:0;background:var(--bg);padding:8px 0 6px;border-top:1px solid var(--line);margin-top:8px}
+.tin .row{align-items:flex-end}
+.tin textarea{flex:1;min-height:2.6em}
 /* メモ */
 .memo{display:grid;grid-template-columns:320px minmax(0,1fr);gap:9px;align-items:start}
 @media (max-width:800px){.memo{grid-template-columns:1fr}.memo .mview{display:none}}
@@ -182,6 +228,7 @@ footer{color:var(--sub);font-size:11px;padding:6px 10px;text-align:center}
   <a href="#week" data-v="week">Weekly</a>
   <a href="#month" data-v="month">Monthly</a>
   <a href="#msg" data-v="msg">連絡事項<span class="bd" id="bdMsg" hidden></span></a>
+  <a href="#talk" data-v="talk">ひとこと<span class="bd" id="bdTalk" hidden></span></a>
   <a href="#memo" data-v="memo">Memo</a>
   <a href="#bm" data-v="bm">Bookmark</a>
   <a href="#set" data-v="set" class="gear" title="設定">⚙</a>
@@ -197,7 +244,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 </script>
 <script>
 'use strict';
-var VERSION = 'v2026-11-15d';
+var VERSION = 'v2026-11-18c';
 var DEMO = /[?&]demo=1/.test(location.search);
 var PFX = DEMO ? 'fcal.demo.' : 'fcal.';
 
@@ -268,6 +315,10 @@ function pd(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s || ''); return m ? ne
 function addDays(s, n) { var d = pd(s); d.setDate(d.getDate() + n); return ymd(d); }
 function diffDays(a, b) { return Math.round((pd(b) - pd(a)) / 86400000); }
 var WD = ['日', '月', '火', '水', '木', '金', '土'];
+function hd(s, noYear, noMonth) {   /* 見出し用：年は小さく、月を大きく */
+  var d = pd(s); if (!d) return '';
+  return (noYear ? '' : '<span class="y">' + d.getFullYear() + '年</span>') + (noMonth ? '' : '<span class="m">' + (d.getMonth() + 1) + '</span>月') + '<span class="d">' + d.getDate() + '</span>日<span class="w">（' + WD[d.getDay()] + '）</span>';
+}
 function jd(s, y) { var d = pd(s); if (!d) return ''; return (y ? d.getFullYear() + '/' : '') + (d.getMonth() + 1) + '/' + d.getDate() + '（' + WD[d.getDay()] + '）'; }
 function now() { return Date.now(); }
 function fmtTs(t) { var d = new Date(t); return ymd(d) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
@@ -302,12 +353,12 @@ function holName(s) { return holidays(+s.slice(0, 4))[s] || ''; }
 
 /* ================= データ ================= */
 function emptyDB() {
-  return { format: 1, app: 'family-cal', events: [], todos: [], msgs: [], memos: [],
-    settings: { updatedAt: 0, subs: {}, ntfy: '', ntfyDetail: true, weekStart: 0 } };
+  return { format: 1, app: 'family-cal', events: [], todos: [], msgs: [], memos: [], talks: [],
+    settings: { updatedAt: 0, subs: {}, ntfy: '', ntfyDetail: true, weekStart: 0, gdest: [] } };
 }
 var DB = emptyDB();
 var cfg = lsGet('cfg', { owner: '', repo: '', token: '' });
-var dev = lsGet('dev', { me: '', notify: true, filt: [], open: {}, seenAt: 0, pfont: 'pf-m', ptodo: false, mtodo: true });
+var dev = lsGet('dev', { me: '', notify: true, filt: [], open: {}, seenAt: 0, talkSeen: 0, pfont: 'pf-m', ptodo: false, mtodo: true });
 function saveDev() { lsSet('dev', dev); }
 function fixDB(x) {
   var e = emptyDB(); x = x || {};
@@ -365,7 +416,7 @@ function tdOnDay(x, d, spread) {
   if (isRep(x)) return occursOn(x, d);
   if (x.deleted || !x.date) return false;
   if (!spread) return d === x.date;
-  if (x.done) return d === (x.doneOn || x.date);
+  if (x.done) { var dn = x.doneOn || x.date; return d === dn || (d >= x.date && d <= dn && d <= tdEnd(x)) || d === x.date; }   /* 済は薄字で残す：元の日〜済にした日 */
   return d >= x.date && d <= tdEnd(x);
 }
 function tdsOn(d, nofilt, spread) {
@@ -409,7 +460,7 @@ async function getFile(path) {
 function putFile(path, text, sha, msg) { var body = { message: msg, content: b64enc(text) }; if (sha) body.sha = sha; return api(path, { method: 'PUT', body: body }); }
 function mergeDB(a, b) {
   var out = emptyDB(), lim = now() - 90 * 864e5;
-  ['events', 'todos', 'msgs', 'memos'].forEach(function (k) {
+  ['events', 'todos', 'msgs', 'memos', 'talks'].forEach(function (k) {
     var m = {};
     (b[k] || []).forEach(function (x) { m[x.id] = x; });
     (a[k] || []).forEach(function (x) { var y = m[x.id]; if (!y || (x.updatedAt || 0) >= (y.updatedAt || 0)) m[x.id] = x; });
@@ -443,7 +494,7 @@ async function sync() {
     if (!ok) throw new Error('保存が重なりました。もう一度押してください');
     pending = false; lsSet('pending', false);
     setStatus('ok');
-    if (!editing()) render(); else updBadge();
+    if (!editing()) render(); else { updBadge(); if (curView() === 'talk') rTalkList(); }
   } catch (e) {
     setStatus(navigator.onLine ? 'err' : 'off', e.message);
   } finally { syncing = false; if (again) { again = false; sync(); } }
@@ -509,10 +560,10 @@ function askUnlock() {
 }
 
 /* ================= 通知（ntfy） ================= */
-function ntfySend(title, msg, tags, prio) {
+function ntfySend(title, msg, tags, prio, view) {
   var t = DB.settings.ntfy; if (!t || !dev.notify || DEMO) return Promise.resolve(false);
   if (!DB.settings.ntfyDetail) msg = '家族カレンダーを開いて確かめてください';
-  return fetch('https://ntfy.sh/', { method: 'POST', body: JSON.stringify({ topic: t, title: title, message: msg, tags: tags || [], priority: prio || 3, click: appUrl() + '#daily' }) })
+  return fetch('https://ntfy.sh/', { method: 'POST', body: JSON.stringify({ topic: t, title: title, message: msg, tags: tags || [], priority: prio || 3, click: appUrl() + '#' + (view || 'daily') }) })
     .then(function (r) { return r.ok; }).catch(function () { return false; });
 }
 function whoText(a) { return (a || []).join('・'); }
@@ -623,16 +674,58 @@ function saveItem(kind, o, isNew) {
 function openEdit(kind, id, ctxDate) {
   var arr = kind === 'ev' ? DB.events : DB.todos, x = findIn(arr, id); if (!x) return;
   var rep = x.rep && x.rep.t && x.rep.t !== 'none';
-  openModal('<h2>' + (kind === 'ev' ? '予定' : 'ToDo') + 'を直す <span class="note">' + (x.by ? '作った人 ' + x.by + '・' : '') + '最終 ' + fmtTs(x.updatedAt) + '</span></h2><div id="ef">' + formHTML(kind, x, false) + '</div>' +
+  openModal('<h2>' + (kind === 'ev' ? '予定' : 'ToDo') + 'を直す <span class="note">' + (x.by ? '作った人 ' + x.by + '・' : '') + '最終 ' + fmtTs(x.updatedAt) + (x.gcalAt ? '・Google へ送った ' + fmtTs(x.gcalAt) + (x.gcalTo ? '（' + esc(x.gcalTo) + '）' : '') : '') + '</span></h2><div id="ef">' + formHTML(kind, x, false) + '</div>' +
     '<div class="row"><button class="btn pri" id="esave">保存</button>' + (rep && ctxDate ? '<button class="btn" id="eskip">' + jd(ctxDate) + ' だけ休み</button>' : '') +
-    '<button class="btn" id="edup">複製して新しく作る</button><button class="btn red" id="edel">削除</button><button class="btn" data-close>閉じる</button></div>' +
+    (kind === 'ev' ? '<button class="btn" id="egcal" title="保存して、Googleカレンダーの予定の作成画面を中身入りで開きます">保存して Google へ</button>' : '') + '<button class="btn" id="edup">複製して新しく作る</button><button class="btn red" id="edel">削除</button><button class="btn" data-close>閉じる</button></div>' +
     (rep && (x.rep.skip || []).length ? '<p class="note">休みにした日：' + x.rep.skip.map(function (d) { return jd(d) + ' <button class="btn sm" data-unskip="' + d + '">戻す</button>'; }).join('　') + '</p>' : ''));
   var collect = bindForm($('#ef'), kind, x, false);
   $('#esave').onclick = function () { var o = collect(); if (!o) return; saveItem(kind, o, false); closeModal(); toast('保存しました'); };
-  $('#edup').onclick = function () { var o = collect(); if (!o) return; delete o.done; delete o.doneD; o._notify = false; saveItem(kind, o, true); closeModal(); toast('複製しました（日付を直すときは開き直す）'); };
+  if ($('#egcal')) $('#egcal').onclick = function () { var o = collect(); if (!o) return; if (x.gcalAt && !confirm('この予定は ' + fmtTs(x.gcalAt) + ' に Google へ送っています。もう一度送りますか？（Google に二重にできます）')) return; saveItem(kind, o, false); closeModal(); gcalSend(x); };
+  $('#edup').onclick = function () { var o = collect(); if (!o) return; delete o.done; delete o.doneD; delete o.gcalAt; delete o.gcalTo; o._notify = false; saveItem(kind, o, true); closeModal(); toast('複製しました（日付を直すときは開き直す）'); };
   $('#edel').onclick = function () { if (!confirm('「' + label(x) + '」を削除しますか？' + (rep ? '\n（繰り返しの予定はすべての日から消えます。1日だけなら「この日だけ休み」）' : ''))) return; x.deleted = true; x.updatedAt = now(); commit(); closeModal(); };
   if ($('#eskip')) $('#eskip').onclick = function () { x.rep.skip = (x.rep.skip || []).concat([ctxDate]); x.updatedAt = now(); commit(); closeModal(); toast(jd(ctxDate) + ' は休みにしました'); };
   $$('[data-unskip]', $('#mbox')).forEach(function (b) { b.onclick = function () { var d = b.getAttribute('data-unskip'); x.rep.skip = x.rep.skip.filter(function (s) { return s !== d; }); x.updatedAt = now(); commit(); openEdit(kind, id, ctxDate); }; });
+}
+
+/* ================= 1件だけ Googleカレンダーへ（予定の作成画面を中身入りで開く。保存は Google の画面で） ================= */
+var GWD = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
+function gcalUrl(o, dest) {
+  var multi = !isRep(o) && o.end && o.end > o.date, ed = multi ? o.end : o.date, dates;
+  if (!o.st) dates = icsD(o.date) + '/' + icsD(addDays(ed, 1));
+  else {
+    var et = o.et && (multi || o.et > o.st) ? o.et : addHour(o.st, 1), edd = ed;
+    if (!et) { et = '00:00'; edd = addDays(ed, 1); }
+    dates = icsT(o.date, o.st) + '/' + icsT(edd, et);
+  }
+  var q = ['action=TEMPLATE', 'text=' + encodeURIComponent((o.who || []).join('') + label(o)), 'dates=' + dates, 'ctz=Asia/Tokyo',
+    'details=' + encodeURIComponent((o.memo ? o.memo + '\n' : '') + '（家族カレンダー：' + gOf('ev', o.gen).n + '）')];
+  if (isRep(o)) {
+    var r = o.rep, rr = r.t === 'weekly' || r.t === 'biweekly' ? 'FREQ=WEEKLY' + (r.t === 'biweekly' ? ';INTERVAL=2' : '') + ';BYDAY=' + ((r.wd && r.wd.length ? r.wd : [pd(o.date).getDay()]).map(function (i) { return GWD[i]; }).join(','))
+      : r.t === 'monthly' ? 'FREQ=MONTHLY;BYMONTHDAY=' + (+o.date.slice(8, 10)) : 'FREQ=YEARLY';
+    if (r.until) rr += ';UNTIL=' + icsD(r.until) + (o.st ? 'T145959Z' : '');   /* 終わりの日の 23:59（日本時間）まで */
+    q.push('recur=' + encodeURIComponent('RRULE:' + rr));
+  }
+  if (dest && dest.c) q.push('src=' + encodeURIComponent(dest.c));
+  if (dest && dest.a) q.push('authuser=' + encodeURIComponent(dest.a));
+  return 'https://calendar.google.com/calendar/render?' + q.join('&');
+}
+function gdestRows(L) {
+  L = L || DB.settings.gdest || []; if (!L.length) L = [{ n: '', a: '', c: '' }];
+  return L.map(function (g) { return '<div class="row gdr"><input data-gn placeholder="名前（例：Nのカレンダー）" value="' + esc(g.n || '') + '" style="width:11em"><input data-ga placeholder="アカウント（メール。空でよい）" value="' + esc(g.a || '') + '" style="flex:1;min-width:150px"><input data-gc placeholder="カレンダーID（空なら既定）" value="' + esc(g.c || '') + '" style="flex:2;min-width:200px"><button class="btn sm red" data-gx>×</button></div>'; }).join('');
+}
+function gdests() { return (DB.settings.gdest || []).filter(function (g) { return g && (g.n || g.a || g.c); }); }
+/* 送り先が登録されていれば選ぶ画面を出す。x：保存済みの予定（送った印を付ける） */
+function gcalSend(x) {
+  function go(dest) {
+    window.open(gcalUrl(x, dest), '_blank', 'noopener');
+    x.gcalAt = now(); x.gcalTo = dest ? dest.n || dest.a || dest.c : ''; x.updatedAt = now(); commit();
+    if (isRep(x) && (x.rep.hol || (x.rep.skip || []).length)) toast('祝日の休み・休みにした日は Google には入りません（Google 側で消してください）');
+  }
+  var L = gdests(); if (!L.length) { go(null); return; }
+  openModal('<h2>どの Googleカレンダーに送りますか</h2><p class="note">「' + esc((x.who || []).join('') + label(x)) + '」。Google の画面が開いたら、入れる先を確かめて［保存］。</p><div class="gdl">' +
+    L.map(function (g, i) { return '<button class="btn" data-gi="' + i + '" style="display:block;width:100%;text-align:left;margin:5px 0;padding:8px 12px"><b>' + esc(g.n || g.c || g.a) + '</b><span class="note" style="margin-left:8px">' + esc([g.a ? 'アカウント ' + g.a : '', g.c ? 'カレンダー ' + g.c : ''].filter(Boolean).join('／')) + '</span></button>'; }).join('') +
+    '<button class="btn" data-gi="-1" style="display:block;width:100%;text-align:left;margin:5px 0;padding:8px 12px"><b>この端末の既定</b><span class="note" style="margin-left:8px">ログイン中のアカウントの既定のカレンダー（Google の画面で選び直せる）</span></button></div><div class="row"><button class="btn" data-close>やめる</button></div>');
+  $$('[data-gi]', $('#mbox')).forEach(function (b) { b.onclick = function () { var i = +b.getAttribute('data-gi'); closeModal(); go(i >= 0 ? L[i] : null); }; });
 }
 
 /* ================= 表示の部品 ================= */
@@ -648,7 +741,7 @@ function tdRow(x, d, showDate) {
   return '<div class="ev' + (dn ? ' done' : '') + '" style="--tc:' + g.c + '" data-td="' + x.id + '" data-d="' + d + '"><input type="checkbox" data-chk' + (dn ? ' checked' : '') + ' title="済"><span class="tm">' + (showDate ? jd(d) : esc(x.st || '')) + '</span>' +
     '<span class="tg">' + g.n + '</span>' + pbs(x.who) + '<span class="nm">' + esc(label(x)) + '</span>' + (x.imp ? '<span class="imp">★</span>' : '') +
     (repText(x) ? '<span class="ic">↻ ' + esc(repText(x)) + '</span>' : '') + (!isRep(x) && x.due && x.due > x.date ? '<span class="ic' + (!dn && x.due < today() ? ' imp' : '') + '">期限 ' + jd(x.due) + 'まで</span>' : '') +
-    (!isRep(x) && !dn ? '<button class="btn sm" data-tmr style="margin-left:auto">明日へ</button>' : '') + (x.memo ? '<span class="mm">' + linkify(x.memo) + '</span>' : '') + '</div>';
+    (!isRep(x) && !dn ? '<button class="btn sm" data-tmr style="margin-left:auto">明日へ</button>' : '') + (!isRep(x) && dn && x.doneOn && x.doneOn !== d ? '<span class="dn2">' + jd(x.doneOn) + ' に済</span>' : '') + (x.memo ? '<span class="mm">' + linkify(x.memo) + '</span>' : '') + '</div>';
 }
 function itHTML(x, kind, d, compact) {
   var g = gOf(kind, x.gen), cont = kind === 'ev' && x.end && x.end > x.date && d !== x.date;
@@ -675,7 +768,7 @@ function bindCommon(root) {
     e.onclick = function (ev) {
       ev.stopPropagation();
       if (ev.target.hasAttribute('data-tmr')) { var y = findIn(DB.todos, e.getAttribute('data-td')); moveTmr([y]); return; }
-      if (ev.target.hasAttribute('data-chk')) { var x = findIn(DB.todos, e.getAttribute('data-td')), d = e.getAttribute('data-d'); if (isRep(x)) { x.doneD = x.doneD || {}; if (ev.target.checked) x.doneD[d] = true; else delete x.doneD[d]; } else { x.done = ev.target.checked; x.doneOn = x.done ? (S.day || d) : ''; } x.updatedAt = now(); commit(); return; }
+      if (ev.target.hasAttribute('data-chk')) { var x = findIn(DB.todos, e.getAttribute('data-td')), d = e.getAttribute('data-d'); if (isRep(x)) { x.doneD = x.doneD || {}; if (ev.target.checked) x.doneD[d] = true; else delete x.doneD[d]; } else { x.done = ev.target.checked; x.doneOn = x.done ? (curView() === 'daily' && S.day ? (S.day < d ? d : S.day) : d) : ''; } x.updatedAt = now(); commit(); return; }
       openEdit('td', e.getAttribute('data-td'), e.getAttribute('data-d'));
     };
   });
@@ -700,14 +793,15 @@ function newsBanner() {
 function rDaily() {
   var d = S.day, hn = holName(d), dw = pd(d).getDay();
   var evs = evsOn(d), tds = tdsOn(d, false, true);
+  tds = tds.filter(function (x) { return !isDone(x, d); }).concat(tds.filter(function (x) { return isDone(x, d); }));   /* 済は下に薄字で */
   var h = '';
   if (!configured() && !DEMO) h += '<div class="banner">まだ接続していません（この端末だけに保存）。「⚙ 設定」で接続するか、家族用のQRコードを読み取ってください。</div>';
   if (configured() && !dev.me) h += '<div class="banner">「⚙ 設定」で、この端末を使う人（R・T・N・A）を選んでください。連絡の差出人・「自分あて」に使います。</div>';
   h += newsBanner();
-  h += '<h2><button class="btn sm" id="dprev">◀</button><span style="' + (hn || dw === 0 ? 'color:var(--hol)' : dw === 6 ? 'color:var(--sat)' : '') + '">' + jd(d, true) + (hn ? ' ' + hn : '') + '</span><button class="btn sm" id="dnext">▶</button>' +
+  h += '<h2><button class="btn sm" id="dprev">◀</button><span style="' + (hn || dw === 0 ? 'color:var(--hol)' : dw === 6 ? 'color:var(--sat)' : '') + '"><span class="ym">' + hd(d) + '</span>' + (hn ? ' ' + hn : '') + '</span><button class="btn sm" id="dnext">▶</button>' +
     '<button class="btn sm" id="dtoday">今日</button><input type="date" id="dpick" value="' + d + '">' + (d === today() ? '<span class="note">今日</span>' : '') + filtBar() + '</h2>';
   h += '<div class="addbar"><button class="addb' + (S.add === 'ev' ? ' on' : '') + '" data-add="ev">＋ 予定を足す</button><button class="addb' + (S.add === 'td' ? ' on' : '') + '" data-add="td">＋ ToDo を足す</button>' + (S.add ? '<button class="btn sm" data-add="">入力の欄を閉じる</button>' : '') + '</div>';
-  if (S.add) h += '<div class="card addp"><h3>' + (S.add === 'ev' ? '予定を足す' : 'ToDo を足す') + '（' + jd(d) + '）</h3><div id="af">' + formHTML(S.add, newItem(S.add, d), true) + '</div><div class="row"><button class="btn pri big" id="acreate" style="padding:6px 26px">作成</button><button class="btn" data-add="">やめる</button></div></div>';
+  if (S.add) h += '<div class="card addp"><h3>' + (S.add === 'ev' ? '予定を足す' : 'ToDo を足す') + '（' + jd(d) + '）</h3><div id="af">' + formHTML(S.add, newItem(S.add, d), true) + '</div><div class="row"><button class="btn pri big" id="acreate" style="padding:6px 26px">作成</button>' + (S.add === 'ev' ? '<button class="btn" id="agcal" title="作成して、Googleカレンダーの予定の作成画面を中身入りで開きます（Google の画面で［保存］）">作成して Google へ</button>' : '') + '<button class="btn" data-add="">やめる</button></div></div>';
   var left = dc('d_ev', '予定（' + evs.length + '）', evs.length ? evs.map(function (x) { return evRow(x, d); }).join('') : '<div class="empty">この日の予定はありません</div>');
   var over = '';
   if (d === today()) {
@@ -731,14 +825,15 @@ function rDaily() {
   $$('[data-add]', m).forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-add'); S.add = S.add === k ? '' : k; render(); }; });
   if ($('#allTmr')) $('#allTmr').onclick = function () { moveTmr(mv); };
   if ($('#seen')) $('#seen').onclick = function () { dev.seenAt = now(); saveDev(); render(); };
-  if (S.add) { var collect = bindForm($('#af'), S.add, newItem(S.add, d), true); $('#acreate').onclick = function () { var o = collect(); if (!o) return; saveItem(S.add, o, true); toast('作成しました'); }; }
+  if (S.add) { var collect = bindForm($('#af'), S.add, newItem(S.add, d), true); $('#acreate').onclick = function () { var o = collect(); if (!o) return; saveItem(S.add, o, true); toast('作成しました'); };
+    if ($('#agcal')) $('#agcal').onclick = function () { var o = collect(); if (!o) return; saveItem('ev', o, true); gcalSend(o); }; }
   bindMsgBtns(m); bindCommon(m);
 }
 
 /* ================= Weekly ================= */
 function rWeek() {
   var ws = DB.settings.weekStart || 0, s = wkStart(S.wk, ws), t = today();
-  var h = '<h2><button class="btn sm" id="wprev">◀ 前の週</button><span>' + jd(s, true) + ' 〜 ' + jd(addDays(s, 6)) + '</span><button class="btn sm" id="wnext">次の週 ▶</button><button class="btn sm" id="wtoday">今週</button>' + filtBar() + '</h2>' + legend() + '<div class="week">';
+  var h = '<h2><button class="btn sm" id="wprev">◀ 前の週</button><span class="ym">' + hd(s) + '<span class="s">〜</span>' + hd(addDays(s, 6), true, addDays(s, 6).slice(0, 7) === s.slice(0, 7)) + '</span><button class="btn sm" id="wnext">次の週 ▶</button><button class="btn sm" id="wtoday">今週</button>' + filtBar() + '</h2>' + legend() + '<div class="week">';
   for (var i = 0; i < 7; i++) {
     var d = addDays(s, i), hn = holName(d), dw = pd(d).getDay();
     var mm = msgsOpen().filter(function (m) { return m.due === d; });
@@ -759,11 +854,11 @@ function rMonth() {
   var ym = S.mo, first = ym + '-01', ws = DB.settings.weekStart || 0, s = wkStart(first, ws), t = today();
   var y = +ym.slice(0, 4), mo = +ym.slice(5, 7), nextFirst = ymd(new Date(y, mo, 1));
   var rows = Math.ceil(diffDays(s, nextFirst) / 7);
-  var h = '<h2 class="noprint"><button class="btn sm" id="mprev">◀</button><span>' + y + '年' + mo + '月</span><button class="btn sm" id="mnext">▶</button><button class="btn sm" id="mtoday">今月</button>' + filtBar() +
+  var h = '<h2 class="noprint"><button class="btn sm" id="mprev">◀</button><span class="ym"><span class="y">' + y + '年</span><span class="m">' + mo + '</span>月</span><button class="btn sm" id="mnext">▶</button><button class="btn sm" id="mtoday">今月</button>' + filtBar() +
     '<label class="inl note"><input type="checkbox" id="mtodo"' + (dev.mtodo ? ' checked' : '') + '>ToDoも出す</label></h2>' +
     '<div class="row noprint"><button class="btn pri" id="mprint">🖨 印刷（A4横）</button><span class="note">文字</span><select id="pfont"><option value="pf-l">大</option><option value="pf-m">中</option><option value="pf-s">小（予定が多い月）</option></select>' +
     '<label class="inl note"><input type="checkbox" id="ptodo"' + (dev.ptodo ? ' checked' : '') + '>ToDoも印刷</label><span class="note">PDFにするときは印刷の画面で「PDFに保存」</span><button class="btn" id="gimp" style="margin-left:auto">Googleカレンダーから取り込む</button><button class="btn" id="gexp">Googleカレンダー用に書き出す</button></div>' + legend() +
-    '<div class="ptitle"><span>' + y + '年' + mo + '月</span><small>家族カレンダー　' + (dev.filt.length ? '表示：' + dev.filt.join('・') + '＋家族　' : '') + '印刷 ' + fmtTs(now()) + '</small></div>' +
+    '<div class="ptitle"><span class="ym"><span class="y">' + y + '年</span><span class="m">' + mo + '</span>月</span><small>家族カレンダー　' + (dev.filt.length ? '表示：' + dev.filt.join('・') + '＋家族　' : '') + '印刷 ' + fmtTs(now()) + '</small></div>' +
     '<table class="cal" style="--ph:' + (168 / rows).toFixed(1) + 'mm"><tr>';
   for (var i = 0; i < 7; i++) { var w = (ws + i) % 7; h += '<th class="' + (w === 0 ? 'sun' : w === 6 ? 'sat' : '') + '">' + WD[w] + '</th>'; }
   h += '</tr>';
@@ -864,6 +959,50 @@ function rMsg() {
     };
   }
   bindMsgBtns(mm); bindCommon(mm);
+}
+
+/* ================= ひとこと（家族全員の部屋） ================= */
+var TALK_FOLD = 30 * 864e5;   /* 1か月より前の書き込みは畳む */
+function talksAll() { return live(DB.talks || []).sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); }); }
+function talksUnread() { var s = dev.talkSeen || 0; return live(DB.talks || []).filter(function (x) { return (x.createdAt || 0) > s && x.from !== dev.me; }).length; }
+function tDay(t) { var d = new Date(t), s = ymd(d); return (s === today() ? '今日' : s === addDays(today(), -1) ? 'きのう' : jd(s)); }
+function tLine(x, seen) {
+  var d = new Date(x.createdAt), mine = dev.me && x.from === dev.me, nw = !mine && seen && x.createdAt > seen;
+  return '<div class="tl' + (mine ? ' me' : '') + (nw ? ' new' : '') + '">' + pb(x.from) + '<div class="tb">' + linkify(x.text) + '</div><span class="tt">' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + '</span>' +
+    (mine ? '<button class="tx" data-tdel="' + x.id + '" title="消す">×</button>' : '') + '</div>';
+}
+function tLines(arr, seen) { var h = '', last = ''; arr.forEach(function (x) { var k = ymd(new Date(x.createdAt)); if (k !== last) { h += '<div class="tday"><span>' + tDay(x.createdAt) + '</span></div>'; last = k; } h += tLine(x, seen); }); return h; }
+function rTalkList() {
+  var box = $('#tlist'); if (!box) return;
+  var lim = now() - TALK_FOLD, all = talksAll(), old = all.filter(function (x) { return x.createdAt < lim; }), rec = all.filter(function (x) { return x.createdAt >= lim; });
+  var atBottom = (window.innerHeight + window.scrollY) >= document.body.scrollHeight - 80;
+  var h = old.length ? dc('t_old', '1か月より前の書き込み（' + old.length + '件）', tLines(old, 0), false) : '';
+  h += rec.length ? tLines(rec, S.tseen) : '<div class="empty">この1か月の書き込みはありません。下の欄から書いてください</div>';
+  box.innerHTML = h;
+  $$('[data-tdel]', box).forEach(function (b) { b.onclick = function () { var x = findIn(DB.talks, b.getAttribute('data-tdel')); if (!x || !confirm('この書き込みを消しますか？')) return; x.deleted = true; x.updatedAt = now(); commit(); }; });
+  $$('details.dc[data-k]', box).forEach(function (d) { d.ontoggle = function () { dev.open[d.getAttribute('data-k')] = d.open; saveDev(); }; });
+  if (atBottom || S.tscroll) { S.tscroll = false; window.scrollTo(0, document.body.scrollHeight); }
+  dev.talkSeen = now(); saveDev(); updBadge();
+}
+function rTalk() {
+  if (S.tseen == null) { S.tseen = dev.talkSeen || 0; S.tscroll = true; }
+  var h = '<div class="talk"><h2>ひとこと<span class="note">家族みんなの部屋です。1か月より前の書き込みは上に畳みます' + (dev.me ? '　この端末：' + pb(dev.me) : '') + '</span></h2><div id="tlist"></div>';
+  h += '<div class="tin">' + (dev.me ? '<div class="row"><textarea id="ttext" rows="2" placeholder="ひとこと（Ctrl＋Enter でも送れます）"></textarea><button class="btn pri" id="tsend" style="padding:6px 20px">送る</button></div><div class="row"><label class="inl"><input type="checkbox" id="tnt"' + (dev.notify ? ' checked' : '') + '>家族に通知</label><button class="btn sm" id="tsync" style="margin-left:auto">新しい書き込みを読み込む</button></div>'
+    : '<div class="banner">書くには、⚙ で「この端末を使う人」を選んでください。<button class="btn sm" onclick="location.hash=\'#set\'">⚙ を開く</button></div>') + '</div></div>';
+  var mm = $('#main'); mm.innerHTML = h; rTalkList();
+  var ta = $('#ttext'); if (!ta) return;
+  ta.value = S.tdraft || ''; ta.oninput = function () { S.tdraft = ta.value; };
+  function send() {
+    var t = ta.value.trim(); if (!t) { ta.focus(); return; }
+    var o = { id: uid(), from: dev.me, text: t }; touch(o); DB.talks.push(o);
+    S.tdraft = ''; S.tscroll = true; var nt = $('#tnt').checked;
+    commit();
+    if (nt) ntfySend('ひとこと（' + o.from + '）', t, ['speech_balloon'], 3, 'talk').then(function (ok) { if (ok) toast('家族に通知しました'); });
+    var t2 = $('#ttext'); if (t2) t2.focus();
+  }
+  $('#tsend').onclick = send;
+  ta.onkeydown = function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send(); } };
+  $('#tsync').onclick = function () { if (configured()) sync(); else toast('GitHub に接続していません（⚙）'); };
 }
 
 /* ================= Memo ================= */
@@ -978,13 +1117,22 @@ function rSet() {
     EGEN.concat(TGEN).map(function (g) { var kind = EGEN.indexOf(g) >= 0 ? 'ev' : 'td'; return '<label><span class="tg" style="--tc:' + g.c + '">' + (kind === 'ev' ? '予定：' : 'ToDo：') + g.n + '</span><textarea rows="4" data-subk="' + kind + ':' + g.k + '">' + esc(subsOf(kind, g.k).join('\n')) + '</textarea></label>'; }).join('') +
     '</div><div class="row"><button class="btn pri" id="ssave">候補を保存</button></div></div>';
   var gn = live(DB.events).filter(function (e) { return e.src === 'google'; }).length;
-  h += '<div class="card"><h3>Googleカレンダー（取り込み・書き出し）</h3><p class="note">Googleカレンダーから書き出したファイル（zip／.ics）を読み込んで予定にします（一方向。アプリで足した予定は Google には入りません）。いま取り込んだ予定 ' + gn + ' 件。</p><div class="row"><button class="btn pri" id="gimp2">取り込む</button><button class="btn" id="gexp2">Google用に書き出す（.ics）</button><button class="btn red" id="gdel">Googleから取り込んだ予定をすべて削除</button></div></div>';
+  h += '<div class="card"><h3>Googleカレンダー（取り込み・書き出し）</h3><p class="note">Googleカレンダーから書き出したファイル（zip／.ics）を読み込んで予定にします（一方向。アプリで足した予定は Google には入りません）。いま取り込んだ予定 ' + gn + ' 件。</p><div class="row"><button class="btn pri" id="gimp2">取り込む</button><button class="btn" id="gexp2">Google用に書き出す（.ics）</button><button class="btn red" id="gdel">Googleから取り込んだ予定をすべて削除</button></div>' +
+    '<h3 style="margin-top:10px">1件だけ Google へ：送り先（家族共通）</h3><p class="note">予定の［作成して Google へ］［保存して Google へ］で選ぶ送り先です。空なら、その端末でログイン中のアカウントの既定のカレンダーへ。<br>' +
+    '・<b>アカウント</b>：その端末のブラウザで、そのアカウントにもログインしているとき、どのアカウントで開くか（メールアドレス）。<br>・<b>カレンダーID</b>：入れる先のカレンダー（Googleカレンダー（PC）→ 設定 → 左でそのカレンダー →「カレンダーの統合」→「カレンダー ID」。本人の既定のカレンダーはメールアドレス）。<br>' +
+    '家族のアカウントのカレンダーに入れるには、①その家族のカレンダーを、送る人のアカウントに「予定の変更」の権限で共有してもらい、カレンダーIDを入れる（アカウントは空でよい）、または ②その端末で家族のアカウントにもログインし、アカウントにその人のメールを入れる。</p><div id="gdl">' + gdestRows() + '</div>' +
+    '<div class="row"><button class="btn" id="gdadd">＋ 送り先を足す</button><button class="btn pri" id="gdsave">送り先を保存</button></div></div>';
   h += '<div class="card"><h3>表示</h3><div class="row">週の始まり <select id="wstart"><option value="0">日曜</option><option value="1">月曜</option></select></div></div>';
   h += '<div class="card"><h3>バックアップ</h3><div class="row"><button class="btn" id="bexp">JSON に書き出す</button><label class="btn">JSON を読み込む（合体）<input type="file" id="bimp" accept=".json" hidden></label></div></div>';
   h += '<div class="card"><h3>アプリの版</h3><div class="row">' + VERSION + '<button class="btn" id="reload">最新版を読み込み直す</button></div></div>';
   var m = $('#main'); m.innerHTML = h;
   $('#wstart').value = String(s.weekStart || 0);
   $('#gimp2').onclick = importDlg; $('#gexp2').onclick = exportDlg;
+  function gdRead() { return $$('#gdl .gdr').map(function (r) { return { n: $('[data-gn]', r).value.trim(), a: $('[data-ga]', r).value.trim(), c: $('[data-gc]', r).value.trim() }; }).filter(function (g) { return g.n || g.a || g.c; }); }
+  function gdBind() { $$('#gdl [data-gx]').forEach(function (b) { b.onclick = function () { b.closest('.gdr').remove(); }; }); }
+  gdBind();
+  $('#gdadd').onclick = function () { var L = gdRead(); L.push({ n: '', a: '', c: '' }); $('#gdl').innerHTML = gdestRows(L); gdBind(); };
+  $('#gdsave').onclick = function () { s.gdest = gdRead(); s.updatedAt = now(); commit(); toast('送り先を保存しました'); };
   $('#gdel').onclick = function () { var g = live(DB.events).filter(function (e) { return e.src === 'google'; }); if (!g.length) { toast('取り込んだ予定はありません'); return; } if (!confirm('Googleから取り込んだ予定 ' + g.length + ' 件をすべて削除しますか？（アプリで作った予定は残ります）')) return; var t = now(); g.forEach(function (e) { e.deleted = true; e.updatedAt = t; }); commit(); toast('削除しました'); };
   $$('[data-me]', m).forEach(function (b) { b.onclick = function () { dev.me = b.getAttribute('data-me'); saveDev(); toast('この端末は ' + dev.me + ' にしました'); render(); }; });
   $('#dnotify').onchange = function () { dev.notify = this.checked; saveDev(); };
@@ -1180,7 +1328,7 @@ function icsFold(line) {   /* 1行75バイトまで（UTF-8）。続きは先頭
 function icsD(d) { return d.replace(/-/g, ''); }
 function icsT(d, t) { return icsD(d) + 'T' + t.replace(':', '') + '00'; }
 function addHour(t, h) { var p = t.split(':'), m = +p[0] * 60 + +p[1] + h * 60; if (m >= 1440) return null; return pad(Math.floor(m / 60)) + ':' + pad(m % 60); }
-function buildICS(A, B, who, noGoogle) {
+function buildICS(A, B, who, noGoogle, noSent) {
   var st = new Date(), stamp = st.getUTCFullYear() + pad(st.getUTCMonth() + 1) + pad(st.getUTCDate()) + 'T' + pad(st.getUTCHours()) + pad(st.getUTCMinutes()) + pad(st.getUTCSeconds()) + 'Z';
   var L = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//family-cal//JA', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:家族カレンダー', 'X-WR-TIMEZONE:Asia/Tokyo',
     'BEGIN:VTIMEZONE', 'TZID:Asia/Tokyo', 'BEGIN:STANDARD', 'DTSTART:19700101T000000', 'TZOFFSETFROM:+0900', 'TZOFFSETTO:+0900', 'TZNAME:JST', 'END:STANDARD', 'END:VTIMEZONE'];
@@ -1188,6 +1336,7 @@ function buildICS(A, B, who, noGoogle) {
   for (var d = A, g = 0; d <= B && g < 1200; d = addDays(d, 1), g++) {
     evsOn(d, true).forEach(function (x) {
       if (noGoogle && x.src === 'google') return;
+      if (noSent && x.gcalAt) return;
       if (!(x.who || []).some(function (k) { return who.indexOf(k) >= 0; })) return;
       var multi = !isRep(x) && x.end && x.end > x.date, sd = multi ? x.date : d;
       var key = x.id + '|' + sd; if (done[key]) return; done[key] = 1;
@@ -1214,6 +1363,7 @@ function exportDlg() {
     '<div class="row"><span class="lab">期間</span><input type="date" id="xA" value="' + esc(S.xA || td) + '"> 〜 <input type="date" id="xB" value="' + esc(S.xB || addDays(td, 180)) + '"></div>' +
     '<div class="row"><span class="lab">人</span><div id="xw">' + whoBtns(who) + '</div><span class="note">選んだ人が入っている予定を書き出す（F〔家族〕の予定も出すときは F も選ぶ）</span></div>' +
     '<div class="row"><label class="inl"><input type="checkbox" id="xg" checked>Googleから取り込んだ予定は書き出さない（Google 側で二重にならないように）</label></div>' +
+    '<div class="row"><label class="inl"><input type="checkbox" id="xs" checked>［Google へ］で1件ずつ送った予定は書き出さない</label></div>' +
     '<div class="row"><button class="btn pri" id="xgo">書き出す</button><button class="btn" data-close>閉じる</button><span class="note" id="xmsg"></span></div>' +
     '<div class="card" style="margin-top:8px"><h3>Googleカレンダーへの読み込み方（PCのブラウザ）</h3><ol style="margin:0;padding-left:1.4em;line-height:1.8;font-size:13px">' +
     '<li>初回だけ：Googleカレンダー →（右上の歯車）設定 → 左の「カレンダーを追加」→「新しいカレンダーを作成」→ 名前「家族カレンダー」→ 作成</li>' +
@@ -1225,7 +1375,7 @@ function exportDlg() {
     if (!A || !B || A > B) { alert('期間を確かめてください'); return; }
     if (diffDays(A, B) > 1100) { alert('期間は3年以内にしてください'); return; }
     if (!who.length) { alert('人を選んでください'); return; }
-    var r = buildICS(A, B, who, $('#xg').checked);
+    var r = buildICS(A, B, who, $('#xg').checked, $('#xs').checked);
     if (!r.n) { $('#xmsg').textContent = 'この条件の予定はありません'; return; }
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([r.text], { type: 'text/calendar;charset=utf-8' }));
     a.download = '家族カレンダー_' + icsD(A) + '-' + icsD(B) + '.ics'; document.body.appendChild(a); a.click(); a.remove();
@@ -1234,19 +1384,20 @@ function exportDlg() {
 }
 
 /* ================= 画面の切り替え ================= */
-var VIEWS = { daily: rDaily, week: rWeek, month: rMonth, msg: rMsg, memo: rMemo, bm: rBm, set: rSet };
+var VIEWS = { daily: rDaily, week: rWeek, month: rMonth, msg: rMsg, talk: rTalk, memo: rMemo, bm: rBm, set: rSet };
 function curView() { var v = (location.hash || '').replace('#', '').split('&')[0]; return VIEWS[v] ? v : 'daily'; }
-function updBadge() { var n = msgsToMe().length, b = $('#bdMsg'); b.hidden = !n; b.textContent = n; }
+function updBadge() { var n = msgsToMe().length, b = $('#bdMsg'); b.hidden = !n; b.textContent = n; var u = curView() === 'talk' ? 0 : talksUnread(), c = $('#bdTalk'); c.hidden = !u; c.textContent = u; }
 function render() {
   var v = curView();
   $$('header a').forEach(function (a) { a.classList.toggle('on', a.getAttribute('data-v') === v); });
   document.body.className = dev.pfont || 'pf-m';
   VIEWS[v](); updBadge(); setStatus();
 }
-window.addEventListener('hashchange', function () { S.add = ''; render(); window.scrollTo(0, 0); });
+window.addEventListener('hashchange', function () { S.add = ''; if (curView() === 'talk') { S.tseen = null; } render(); if (curView() !== 'talk') window.scrollTo(0, 0); });
 $('#conn').onclick = function () { if (configured()) sync(); else location.hash = '#set'; };
 document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && configured() && !syncing) sync(); });
 setInterval(function () { if (document.visibilityState === 'visible' && configured() && !editing()) sync(); }, 60000);
+setInterval(function () { if (document.visibilityState === 'visible' && configured() && curView() === 'talk' && $('#modal').hidden) sync(); }, 20000);  /* ひとことを開いている間は20秒ごと */
 window.addEventListener('online', function () { if (configured()) sync(); });
 
 /* ================= 試用（?demo=1）のデータ ================= */
@@ -1273,11 +1424,89 @@ function demoDB() {
   d.memos.push({ id: uid() + 'o1', cat: 'tabi', who: ['F'], title: '冬休みの旅行の旅程', body: '1日目\n 8:30 家を出る\n 10:12 東京駅発 はやぶさ\n 13:00 ホテルに荷物を預ける\n 午後 スキー場\n\n2日目\n 9:00 スキー教室（A）\n 15:00 温泉\n\n3日目\n 11:00 チェックアウト\n 帰りにおみやげ', bm: true, createdAt: now() - 864e5, updatedAt: now() - 864e5, by: 'N' });
   d.memos.push({ id: uid() + 'o2', cat: 'mise', who: ['F'], title: '誕生日に行きたいお店', body: 'ビストロ ○○（駅の北口）\nケーキ：△△洋菓子店（2日前までに予約）', bm: false, createdAt: now() - 864e5, updatedAt: now() - 864e5, by: 'T' });
   d.memos.push({ id: uid() + 'o3', cat: 'gyo', who: ['F'], title: 'お正月の予定', body: '元日：初詣\n2日：祖父母の家', bm: false, createdAt: now() - 864e5, updatedAt: now() - 864e5, by: 'N' });
+  d.talks.push({ id: uid() + 't1', from: 'N', text: '今日は19時ごろ帰ります', createdAt: now() - 3 * 36e5, updatedAt: now() - 3 * 36e5, by: 'N' });
+  d.talks.push({ id: uid() + 't2', from: 'A', text: 'りょうかい！塾のあと迎えに来てほしい', createdAt: now() - 2 * 36e5, updatedAt: now() - 2 * 36e5, by: 'A' });
+  d.talks.push({ id: uid() + 't3', from: 'T', text: '先月の旅行の写真、メモに場所を書いておいた', createdAt: now() - 40 * 864e5, updatedAt: now() - 40 * 864e5, by: 'T' });
   return d;
 }
 
+
+/* ================= 日付を選ぶ3か月のカレンダー（初診入力 datepick.js と同じ形。月を大きく、年は小さく） =================
+   日付の欄を押すと 前の月・その月・次の月 を出す。真ん中の月を入力欄の真ん中の下に。はみ出すときは画面の端に合わせる。
+   スマホ（幅 640px 以下）では画面の幅いっぱいに出し、横にずらせる（真ん中の月を見える位置に）。祝日は赤 */
+(function () {
+  var box = null, cur = null, base = null;
+  function close() { if (box) { box.remove(); box = null; cur = null; } }
+  function month(y, m, sel, td) {
+    var f = new Date(y, m, 1), h = '<div class="dpm"><div class="dph"><small>' + y + '年</small><b>' + (m + 1) + '月</b></div><table><tr>' + '日月火水木金土'.split('').map(function (w) { return '<th>' + w + '</th>'; }).join('') + '</tr><tr>';
+    for (var i = 0; i < f.getDay(); i++) h += '<td class="e"></td>';
+    var n = new Date(y, m + 1, 0).getDate();
+    for (var d = 1; d <= n; d++) {
+      var s = y + '-' + pad(m + 1) + '-' + pad(d), w = (f.getDay() + d - 1) % 7, hn = holName(s);
+      h += '<td data-v="' + s + '"' + (hn ? ' title="' + hn + '"' : '') + ' class="' + (w === 0 ? 'su ' : w === 6 ? 'sa ' : '') + (hn ? 'ho ' : '') + (s === sel ? 'sel ' : '') + (s === td ? 'td' : '') + '">' + d + '</td>';
+      if (w === 6 && d < n) h += '</tr><tr>';
+    }
+    return h + '</tr></table></div>';
+  }
+  function draw() {
+    var sel = cur.value, td = today(), y = base.getFullYear(), m = base.getMonth();
+    var h = '<div class="dpb"><button data-n="-1">◀ 前の月</button><span><button data-t="1">今日</button> ' + (cur.required ? '' : '<button data-c="1">消す</button> ') + '<button data-x="1">閉じる</button></span><button data-n="1">次の月 ▶</button></div><div class="dpms">';
+    for (var k = -1; k <= 1; k++) { var d = new Date(y, m + k, 1); h += month(d.getFullYear(), d.getMonth(), sel, td); }
+    box.innerHTML = h + '</div>';
+    if (box.classList.contains('sp')) { var ms = box.querySelector('.dpms'), mid = ms.children[1]; ms.scrollLeft = mid.offsetLeft - (ms.clientWidth - mid.offsetWidth) / 2; }
+  }
+  function set(v) {
+    var el = cur; close(); el.value = v;
+    el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  function open(el) {
+    if (el.disabled || el.readOnly) return;
+    close(); cur = el;
+    var v = /^\d{4}-\d{2}-\d{2}$/.test(el.value) ? el.value : today();
+    base = new Date(+v.slice(0, 4), +v.slice(5, 7) - 1, 1);
+    box = document.createElement('div'); box.id = 'dp3';
+    var vw = document.documentElement.clientWidth, sp = vw <= 640; if (sp) box.classList.add('sp');
+    document.body.appendChild(box); draw();
+    var r = el.getBoundingClientRect(), yy = r.bottom + window.scrollY + 2, x;
+    if (sp) x = window.scrollX;
+    else {
+      x = r.left + r.width / 2 + window.scrollX - box.offsetWidth / 2;
+      if (x + box.offsetWidth > window.scrollX + vw - 4) x = window.scrollX + vw - box.offsetWidth - 4;
+      if (x < window.scrollX + 4) x = window.scrollX + 4;
+    }
+    if (r.bottom + box.offsetHeight > window.innerHeight && r.top > box.offsetHeight) yy = r.top + window.scrollY - box.offsetHeight - 2;
+    box.style.left = x + 'px'; box.style.top = yy + 'px'; if (sp) box.style.width = vw + 'px';
+    function hit(e) {
+      var t = e.target, tdv = t.closest && t.closest('td[data-v]');
+      if (tdv) { e.preventDefault(); return set(tdv.getAttribute('data-v')); }
+      if (t.getAttribute('data-n')) { e.preventDefault(); base = new Date(base.getFullYear(), base.getMonth() + (+t.getAttribute('data-n')), 1); draw(); return; }
+      if (t.getAttribute('data-t')) { e.preventDefault(); return set(today()); }
+      if (t.getAttribute('data-c')) { e.preventDefault(); return set(''); }
+      if (t.getAttribute('data-x')) { e.preventDefault(); return close(); }
+    }
+    box.addEventListener('mousedown', function (e) { if (!(e.target.closest && e.target.closest('.dpms') && sp)) e.preventDefault(); });
+    box.addEventListener('click', hit);
+  }
+  function isDate(t) { return t && t.tagName === 'INPUT' && t.type === 'date'; }
+  document.addEventListener('mousedown', function (e) {
+    var t = e.target; if (box && box.contains(t)) return;
+    if (isDate(t)) { e.preventDefault(); if (cur !== t) setTimeout(function () { open(t); }, 0); else close(); return; }
+    close();
+  }, true);
+  /* スマホ・タブレット：標準の日付の画面を出さずにこのカレンダーを出す */
+  document.addEventListener('touchstart', function (e) {
+    var t = e.target; if (box && box.contains(t)) return;
+    if (isDate(t)) { e.preventDefault(); if (cur !== t) open(t); else close(); return; }
+    close();
+  }, { capture: true, passive: false });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); if (box && cur && e.target === cur && (e.key === 'Tab' || e.key === 'Enter')) close(); }, true);
+  window.addEventListener('hashchange', close);
+  window.addEventListener('resize', function () { if (!('ontouchstart' in window)) close(); });
+})();
+
 /* ================= 起動 ================= */
 loadLocal();
+if (dev.gsrc) { if (!gdests().some(function (g) { return g.c === dev.gsrc; })) { DB.settings.gdest = gdests().concat([{ n: '家族カレンダー', a: '', c: dev.gsrc }]); DB.settings.updatedAt = now(); saveLocal(); pending = true; lsSet('pending', true); } delete dev.gsrc; saveDev(); }
 $('#ver').textContent = '家族カレンダー ' + VERSION + (DEMO ? '（試用：この端末だけに保存）' : '');
 var hadKey = takeHash();
 render();
