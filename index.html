@@ -34,7 +34,7 @@ h2{font-size:17px;margin:2px 0 8px;display:flex;align-items:center;gap:8px;flex-
 .ym{display:inline-flex;align-items:baseline;gap:1px;white-space:nowrap}
 .ym .y{font-size:12px;font-weight:normal;color:var(--sub);margin-right:4px}
 .ym .m{font-size:26px;font-weight:bold;line-height:1}
-.ym .d{font-size:21px;font-weight:bold;line-height:1;margin-left:1px}
+.ym .d{font-size:26px;font-weight:bold;line-height:1;margin-left:1px}
 .ym .w{font-size:14px}
 .ym .s{font-size:13px;font-weight:normal;margin:0 2px}
 .ev .dn2{font-size:11px;color:var(--sub);margin-left:4px}
@@ -227,8 +227,8 @@ footer{color:var(--sub);font-size:11px;padding:6px 10px;text-align:center}
   <a href="#daily" data-v="daily">Daily</a>
   <a href="#week" data-v="week">Weekly</a>
   <a href="#month" data-v="month">Monthly</a>
-  <a href="#msg" data-v="msg">連絡事項<span class="bd" id="bdMsg" hidden></span></a>
-  <a href="#talk" data-v="talk">ひとこと<span class="bd" id="bdTalk" hidden></span></a>
+  <a href="#msg" data-v="msg">Notice<span class="bd" id="bdMsg" hidden></span></a>
+  <a href="#talk" data-v="talk">Chat<span class="bd" id="bdTalk" hidden></span></a>
   <a href="#memo" data-v="memo">Memo</a>
   <a href="#bm" data-v="bm">Bookmark</a>
   <a href="#set" data-v="set" class="gear" title="設定">⚙</a>
@@ -244,7 +244,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 </script>
 <script>
 'use strict';
-var VERSION = 'v2026-11-18c';
+var VERSION = 'v2026-11-18e';
 var DEMO = /[?&]demo=1/.test(location.search);
 var PFX = DEMO ? 'fcal.demo.' : 'fcal.';
 
@@ -935,7 +935,7 @@ function bindMsgBtns(root) {
   });
 }
 function rMsg() {
-  var h = '<h2>連絡事項 <span class="filt">' + [['me', '自分あて'], ['from', '自分から'], ['all', 'すべて']].map(function (a) { return '<button class="fchip' + (S.mf === a[0] ? ' on' : '') + '" data-mfl="' + a[0] + '">' + a[1] + '</button>'; }).join('') + '</span>' + (dev.me ? '<span class="note">この端末：' + pb(dev.me) + '</span>' : '<span class="note">（⚙で使う人を選ぶと「自分あて」が使えます）</span>') + '</h2>';
+  var h = '<h2>Notice <span class="filt">' + [['me', '自分あて'], ['from', '自分から'], ['all', 'すべて']].map(function (a) { return '<button class="fchip' + (S.mf === a[0] ? ' on' : '') + '" data-mfl="' + a[0] + '">' + a[1] + '</button>'; }).join('') + '</span>' + (dev.me ? '<span class="note">この端末：' + pb(dev.me) + '</span>' : '<span class="note">（⚙で使う人を選ぶと「自分あて」が使えます）</span>') + '</h2>';
   h += '<div class="addbar"><button class="addb' + (S.addMsg ? ' on' : '') + '" id="maddb">＋ 連絡を書く</button>' + (S.addMsg ? '<button class="btn sm" id="mclose">入力の欄を閉じる</button>' : '') + '</div>';
   if (S.addMsg) h += '<div class="card addp"><h3>連絡を書く</h3><div id="mf">' + msgForm({ from: dev.me && dev.me !== 'F' ? dev.me : '', to: [], kind: '', due: '', dueText: '', detail: '' }) + '</div><div class="row"><label class="inl"><input type="checkbox" id="mnt"' + (dev.notify ? ' checked' : '') + '>家族に通知</label><button class="btn pri" id="mcreate" style="padding:6px 26px">作成</button></div></div>';
   var all = live(DB.msgs).filter(function (m) {
@@ -955,7 +955,7 @@ function rMsg() {
     var col = bindMsgForm($('#mf'), { from: dev.me && dev.me !== 'F' ? dev.me : '', to: [], kind: '', due: '', dueText: '', detail: '' }, true);
     $('#mcreate').onclick = function () {
       var o = col(); if (!o) return; o.id = uid(); o.done = false; o.by = dev.me || o.from; touch(o); DB.msgs.push(o); S.addMsg = false; commit(); toast('作成しました');
-      if ($('#mnt') && $('#mnt').checked) ntfySend('連絡 ' + o.from + ' ☞ ' + whoText(o.to), '【' + kOf(MKIND, o.kind).n + '】' + dueText(o) + '\n' + o.detail, ['envelope'], 4).then(function (ok) { if (ok) toast('家族に通知しました'); });
+      if ($('#mnt') && $('#mnt').checked) ntfySend('Notice ' + o.from + ' ☞ ' + whoText(o.to), '【' + kOf(MKIND, o.kind).n + '】' + dueText(o) + '\n' + o.detail, ['envelope'], 4).then(function (ok) { if (ok) toast('家族に通知しました'); });
     };
   }
   bindMsgBtns(mm); bindCommon(mm);
@@ -986,7 +986,7 @@ function rTalkList() {
 }
 function rTalk() {
   if (S.tseen == null) { S.tseen = dev.talkSeen || 0; S.tscroll = true; }
-  var h = '<div class="talk"><h2>ひとこと<span class="note">家族みんなの部屋です。1か月より前の書き込みは上に畳みます' + (dev.me ? '　この端末：' + pb(dev.me) : '') + '</span></h2><div id="tlist"></div>';
+  var h = '<div class="talk"><h2>Chat<span class="note">家族みんなの部屋です。1か月より前の書き込みは上に畳みます' + (dev.me ? '　この端末：' + pb(dev.me) : '') + '</span></h2><div id="tlist"></div>';
   h += '<div class="tin">' + (dev.me ? '<div class="row"><textarea id="ttext" rows="2" placeholder="ひとこと（Ctrl＋Enter でも送れます）"></textarea><button class="btn pri" id="tsend" style="padding:6px 20px">送る</button></div><div class="row"><label class="inl"><input type="checkbox" id="tnt"' + (dev.notify ? ' checked' : '') + '>家族に通知</label><button class="btn sm" id="tsync" style="margin-left:auto">新しい書き込みを読み込む</button></div>'
     : '<div class="banner">書くには、⚙ で「この端末を使う人」を選んでください。<button class="btn sm" onclick="location.hash=\'#set\'">⚙ を開く</button></div>') + '</div></div>';
   var mm = $('#main'); mm.innerHTML = h; rTalkList();
@@ -997,7 +997,7 @@ function rTalk() {
     var o = { id: uid(), from: dev.me, text: t }; touch(o); DB.talks.push(o);
     S.tdraft = ''; S.tscroll = true; var nt = $('#tnt').checked;
     commit();
-    if (nt) ntfySend('ひとこと（' + o.from + '）', t, ['speech_balloon'], 3, 'talk').then(function (ok) { if (ok) toast('家族に通知しました'); });
+    if (nt) ntfySend('Chat（' + o.from + '）', t, ['speech_balloon'], 3, 'talk').then(function (ok) { if (ok) toast('家族に通知しました'); });
     var t2 = $('#ttext'); if (t2) t2.focus();
   }
   $('#tsend').onclick = send;
